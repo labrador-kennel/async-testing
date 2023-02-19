@@ -174,7 +174,7 @@ class TestSuiteRunnerTest extends PHPUnitTestCase {
             yield $this->parseAndRun($this->implicitDefaultTestSuitePath('ExceptionThrowingTest'));
 
             $this->assertCount(1, $this->actual);
-            $this->assertSame(TestState::Errored(), $this->actual[0]->getState());
+            $this->assertSame(TestState::Errored, $this->actual[0]->getState());
 
             $this->assertNotNull($this->actual[0]->getException());
             $expectedMsg = 'An unexpected exception of type "Exception" with code 0 and message "Test failure" was thrown from #[Test] ' . ImplicitDefaultTestSuite\ExceptionThrowingTest\MyTestCase::class . '::throwsException';
@@ -197,7 +197,7 @@ class TestSuiteRunnerTest extends PHPUnitTestCase {
             yield $this->parseAndRun($this->implicitDefaultTestSuitePath('TestFailedExceptionThrowingTest'));
 
             $this->assertCount(1, $this->actual);
-            $this->assertSame(TestState::Failed(), $this->actual[0]->getState());
+            $this->assertSame(TestState::Failed, $this->actual[0]->getState());
 
             $this->assertNotNull($this->actual[0]->getException());
             $this->assertSame('Something barfed', $this->actual[0]->getException()->getMessage());
@@ -224,7 +224,7 @@ class TestSuiteRunnerTest extends PHPUnitTestCase {
             yield $this->parseAndRun($this->implicitDefaultTestSuitePath('CustomAssertions'));
 
             $this->assertCount(1, $this->actual);
-            $this->assertSame(TestState::Passed(), $this->actual[0]->getState());
+            $this->assertSame(TestState::Passed, $this->actual[0]->getState());
 
         });
     }
@@ -390,7 +390,7 @@ class TestSuiteRunnerTest extends PHPUnitTestCase {
                 $this->actual[0]->getState(),
                 $this->actual[1]->getState()
             ];
-            $expected = [TestState::Passed(), TestState::Disabled()];
+            $expected = [TestState::Passed, TestState::Disabled];
             $this->assertEqualsCanonicalizing($expected, $actual);
         });
     }
@@ -405,7 +405,7 @@ class TestSuiteRunnerTest extends PHPUnitTestCase {
                 $this->actual[1]->getState(),
                 $this->actual[2]->getState(),
             ];
-            $expectedState = [TestState::Disabled(), TestState::Disabled(), TestState::Disabled()];
+            $expectedState = [TestState::Disabled, TestState::Disabled, TestState::Disabled];
             $this->assertEqualsCanonicalizing($expectedState, $actualState);
 
             $actualData = [
@@ -423,7 +423,7 @@ class TestSuiteRunnerTest extends PHPUnitTestCase {
             yield $this->parseAndRun($this->implicitDefaultTestSuitePath('TestDisabled'));
             $disabledTestResult = $this->fetchTestResultForTest(ImplicitDefaultTestSuite\TestDisabled\MyTestCase::class, 'skippedTest');
 
-            $this->assertSame(TestState::Disabled(), $disabledTestResult->getState());
+            $this->assertSame(TestState::Disabled, $disabledTestResult->getState());
             $this->assertInstanceOf(TestDisabledException::class, $disabledTestResult->getException());
             $expected = sprintf(
                 '%s::%s has been marked disabled via annotation',
@@ -448,12 +448,12 @@ class TestSuiteRunnerTest extends PHPUnitTestCase {
 
             $disabledTestResult = $this->fetchTestResultForTest(ImplicitDefaultTestSuite\TestDisabledHookNotInvoked\MyTestCase::class, 'disabledTest');
 
-            $this->assertSame(TestState::Disabled(), $disabledTestResult->getState());
+            $this->assertSame(TestState::Disabled, $disabledTestResult->getState());
             $this->assertSame([], $disabledTestResult->getTestCase()->getState());
 
             $enabledTestResult = $this->fetchTestResultForTest(ImplicitDefaultTestSuite\TestDisabledHookNotInvoked\MyTestCase::class, 'enabledTest');
 
-            $this->assertSame(TestState::Passed(), $enabledTestResult->getState());
+            $this->assertSame(TestState::Passed, $enabledTestResult->getState());
             $this->assertSame(['before', 'enabled', 'after'], $enabledTestResult->getTestCase()->getState());
         });
     }
@@ -464,12 +464,12 @@ class TestSuiteRunnerTest extends PHPUnitTestCase {
 
             $testOneResult = $this->fetchTestResultForTest(ImplicitDefaultTestSuite\TestCaseDisabledHookNotInvoked\MyTestCase::class, 'testOne');
 
-            $this->assertSame(TestState::Disabled(), $testOneResult->getState());
+            $this->assertSame(TestState::Disabled, $testOneResult->getState());
             $this->assertSame([], $testOneResult->getTestCase()->getState());
 
             $testTwoResult = $this->fetchTestResultForTest(ImplicitDefaultTestSuite\TestCaseDisabledHookNotInvoked\MyTestCase::class, 'testTwo');
 
-            $this->assertSame(TestState::Disabled(), $testTwoResult->getState());
+            $this->assertSame(TestState::Disabled, $testTwoResult->getState());
             $this->assertSame([], $testTwoResult->getTestCase()->getState());
         });
     }
@@ -480,7 +480,7 @@ class TestSuiteRunnerTest extends PHPUnitTestCase {
 
             $testSomethingResult = $this->fetchTestResultForTest(ExplicitTestSuite\TestSuiteDisabledHookNotInvoked\MyTestCase::class, 'testSomething');
 
-            $this->assertSame(TestState::Disabled(), $testSomethingResult->getState());
+            $this->assertSame(TestState::Disabled, $testSomethingResult->getState());
             $this->assertSame([], $testSomethingResult->getTestCase()->testSuite()->getState());
         });
     }
@@ -491,7 +491,7 @@ class TestSuiteRunnerTest extends PHPUnitTestCase {
 
             $testOneResult = $this->fetchTestResultForTest(ImplicitDefaultTestSuite\TestDisabledCustomMessage\MyTestCase::class, 'testOne');
 
-            $this->assertSame(TestState::Disabled(), $testOneResult->getState());
+            $this->assertSame(TestState::Disabled, $testOneResult->getState());
             $this->assertInstanceOf(TestDisabledException::class, $testOneResult->getException());
             $this->assertSame('Not sure what we should do here yet', $testOneResult->getException()->getMessage());
         });
@@ -503,7 +503,7 @@ class TestSuiteRunnerTest extends PHPUnitTestCase {
 
             $testOneResult = $this->fetchTestResultForTest(ImplicitDefaultTestSuite\TestCaseDisabledCustomMessage\MyTestCase::class, 'testOne');
 
-            $this->assertSame(TestState::Disabled(), $testOneResult->getState());
+            $this->assertSame(TestState::Disabled, $testOneResult->getState());
             $this->assertInstanceOf(TestDisabledException::class, $testOneResult->getException());
             $this->assertSame('The TestCase is disabled', $testOneResult->getException()->getMessage());
         });
@@ -515,7 +515,7 @@ class TestSuiteRunnerTest extends PHPUnitTestCase {
 
             $testOneResult = $this->fetchTestResultForTest(ExplicitTestSuite\TestSuiteDisabledCustomMessage\MyTestCase::class, 'testOne');
 
-            $this->assertSame(TestState::Disabled(), $testOneResult->getState());
+            $this->assertSame(TestState::Disabled, $testOneResult->getState());
             $this->assertInstanceOf(TestDisabledException::class, $testOneResult->getException());
             $this->assertSame('The AttachToTestSuite is disabled', $testOneResult->getException()->getMessage());
         });
@@ -527,15 +527,15 @@ class TestSuiteRunnerTest extends PHPUnitTestCase {
 
             $failingResult = $this->fetchTestResultForTest(ImplicitDefaultTestSuite\TestDisabledEvents\MyTestCase::class, 'testFailingFloatEquals');
 
-            $this->assertSame(TestState::Failed(), $failingResult->getState());
+            $this->assertSame(TestState::Failed, $failingResult->getState());
 
             $passingResult = $this->fetchTestResultForTest(ImplicitDefaultTestSuite\TestDisabledEvents\MyTestCase::class, 'testIsTrue');
 
-            $this->assertSame(TestState::Passed(), $passingResult->getState());
+            $this->assertSame(TestState::Passed, $passingResult->getState());
 
             $disabledResult = $this->fetchTestResultForTest(ImplicitDefaultTestSuite\TestDisabledEvents\MyTestCase::class, 'testIsDisabled');
 
-            $this->assertSame(TestState::Disabled(), $disabledResult->getState());
+            $this->assertSame(TestState::Disabled, $disabledResult->getState());
         });
     }
 
@@ -589,7 +589,7 @@ class TestSuiteRunnerTest extends PHPUnitTestCase {
             yield $this->parseAndRun($this->implicitDefaultTestSuitePath('TestExpectsExceptionOnly'));
 
             $this->assertCount(1, $this->actual);
-            $this->assertSame(TestState::Passed(), $this->actual[0]->getState());
+            $this->assertSame(TestState::Passed, $this->actual[0]->getState());
         });
     }
 
@@ -613,7 +613,7 @@ class TestSuiteRunnerTest extends PHPUnitTestCase {
             yield $this->parseAndRun($this->implicitDefaultTestSuitePath('TestExpectsExceptionMessage'));
 
             $this->assertCount(1, $this->actual);
-            $this->assertSame(TestState::Passed(), $this->actual[0]->getState());
+            $this->assertSame(TestState::Passed, $this->actual[0]->getState());
         });
     }
 
@@ -670,7 +670,7 @@ class TestSuiteRunnerTest extends PHPUnitTestCase {
             yield $this->parseAndRun($this->implicitDefaultTestSuitePath('TestExpectsNoAssertions'));
 
             $this->assertCount(1, $this->actual);
-            $this->assertSame(TestState::Passed()->toString(), $this->actual[0]->getState()->toString());
+            $this->assertSame(TestState::Passed, $this->actual[0]->getState());
         });
     }
 
@@ -679,7 +679,7 @@ class TestSuiteRunnerTest extends PHPUnitTestCase {
             yield $this->parseAndRun($this->implicitDefaultTestSuitePath('TestExpectsNoAssertionsAssertMade'));
 
             $this->assertCount(1, $this->actual);
-            $this->assertSame(TestState::Failed()->toString(), $this->actual[0]->getState()->toString());
+            $this->assertSame(TestState::Failed, $this->actual[0]->getState());
             $this->assertSame('Expected ' . ImplicitDefaultTestSuite\TestExpectsNoAssertionsAssertMade\MyTestCase::class .  '::testNoAssertionAssertionMade to make 0 assertions but made 2', $this->actual[0]->getException()->getMessage());
         });
     }
@@ -689,7 +689,7 @@ class TestSuiteRunnerTest extends PHPUnitTestCase {
             yield $this->parseAndRun($this->implicitDefaultTestSuitePath('TestExpectsNoAsyncAssertionsAssertMade'));
 
             $this->assertCount(1, $this->actual);
-            $this->assertSame(TestState::Failed()->toString(), $this->actual[0]->getState()->toString());
+            $this->assertSame(TestState::Failed, $this->actual[0]->getState());
             $this->assertSame('Expected ' . ImplicitDefaultTestSuite\TestExpectsNoAsyncAssertionsAssertMade\MyTestCase::class .  '::noAssertionButAsyncAssertionMade to make 0 assertions but made 2', $this->actual[0]->getException()->getMessage());
         });
     }
@@ -699,7 +699,7 @@ class TestSuiteRunnerTest extends PHPUnitTestCase {
             yield $this->parseAndRun($this->implicitDefaultTestSuitePath('TestHasTimeout'));
 
             $this->assertCount(1, $this->actual);
-            $this->assertSame(TestState::Failed()->toString(), $this->actual[0]->getState()->toString());
+            $this->assertSame(TestState::Failed, $this->actual[0]->getState());
             $msg = sprintf(
                 'Expected %s::timeOutTest to complete within 100ms',
                 ImplicitDefaultTestSuite\TestHasTimeout\MyTestCase::class
@@ -718,7 +718,7 @@ class TestSuiteRunnerTest extends PHPUnitTestCase {
             /** @var ImplicitDefaultTestSuite\SingleMockTest\MyTestCase $testCase */
             $testCase = $testResult->getTestCase();
 
-            $this->assertEquals(TestState::Passed(), $testResult->getState());
+            $this->assertEquals(TestState::Passed, $testResult->getState());
             $this->assertNotNull($testCase->getCreatedMock());
             $createdMock = $testCase->getCreatedMock()->class;
 
@@ -753,7 +753,7 @@ class TestSuiteRunnerTest extends PHPUnitTestCase {
             $this->assertCount(1, $this->actual);
             $testResult = $this->actual[0];
 
-            $this->assertEquals(TestState::Failed(), $testResult->getState());
+            $this->assertEquals(TestState::Failed, $testResult->getState());
             $this->assertInstanceOf(MockFailureException::class, $testResult->getException());
             $this->assertSame('Thrown from the FailingMockBridgeStub', $testResult->getException()->getMessage());
         });
@@ -766,7 +766,7 @@ class TestSuiteRunnerTest extends PHPUnitTestCase {
             $this->assertCount(1, $this->actual);
             $testResult = $this->actual[0];
 
-            $this->assertEquals(TestState::Passed(), $testResult->getState());
+            $this->assertEquals(TestState::Passed, $testResult->getState());
 
             $expected = [
                 'beforeEachOne',
@@ -787,7 +787,7 @@ class TestSuiteRunnerTest extends PHPUnitTestCase {
             $this->assertCount(1, $this->actual);
             $testResult = $this->actual[0];
 
-            $this->assertEquals(TestState::Passed(), $testResult->getState());
+            $this->assertEquals(TestState::Passed, $testResult->getState());
 
             $expected = [
                 'beforeAllOne',
@@ -808,7 +808,7 @@ class TestSuiteRunnerTest extends PHPUnitTestCase {
             $this->assertCount(1, $this->actual);
             $testResult = $this->actual[0];
 
-            $this->assertEquals(TestState::Passed(), $testResult->getState());
+            $this->assertEquals(TestState::Passed, $testResult->getState());
 
             $expected = [
                 'beforeAllOne',

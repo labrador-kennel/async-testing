@@ -13,7 +13,6 @@
     "symfony/console": "^5.2",
     "opis/json-schema": "^2.0",
     "amphp/byte-stream": "^1.8",
-    "cspray/yape": "^3.1",
     "phpunit/php-timer": "^5.0",
     "amphp/file": "^1.0",
     "cspray/labrador-styled-byte-stream": "^0.1.0"

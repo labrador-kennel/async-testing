@@ -83,7 +83,7 @@ final class TestSuiteRunner {
 
                 $aggregateSummaryBuilder->startTestSuite($testSuiteModel);
                 if (!$testSuiteModel->isDisabled()) {
-                    yield $this->invokeHooks($testSuite, $testSuiteModel, HookType::BeforeAll(), TestSuiteSetUpException::class);
+                    yield $this->invokeHooks($testSuite, $testSuiteModel, HookType::BeforeAll, TestSuiteSetUpException::class);
                 }
 
                 /** @var TestCaseModel[] $testCaseModels */
@@ -94,10 +94,10 @@ final class TestSuiteRunner {
 
                     $aggregateSummaryBuilder->startTestCase($testCaseModel);
                     if (!$testSuiteModel->isDisabled()) {
-                        yield $this->invokeHooks($testSuite, $testSuiteModel, HookType::BeforeEach(), TestSuiteSetUpException::class);
+                        yield $this->invokeHooks($testSuite, $testSuiteModel, HookType::BeforeEach, TestSuiteSetUpException::class);
                     }
                     if (!$testCaseModel->isDisabled()) {
-                        yield $this->invokeHooks($testCaseModel->getClass(), $testCaseModel, HookType::BeforeAll(), TestCaseSetUpException::class, [$testSuite]);
+                        yield $this->invokeHooks($testCaseModel->getClass(), $testCaseModel, HookType::BeforeAll, TestCaseSetUpException::class, [$testSuite]);
                     }
 
                     $testMethodModels = $this->randomizer->randomize($testCaseModel->getTestModels());
@@ -152,17 +152,17 @@ final class TestSuiteRunner {
                     }
 
                     if (!$testCaseModel->isDisabled()) {
-                        yield $this->invokeHooks($testCaseModel->getClass(), $testCaseModel, HookType::AfterAll(), TestCaseTearDownException::class, [$testSuite]);
+                        yield $this->invokeHooks($testCaseModel->getClass(), $testCaseModel, HookType::AfterAll, TestCaseTearDownException::class, [$testSuite]);
                     }
                     if (!$testSuiteModel->isDisabled()) {
-                        yield $this->invokeHooks($testSuite, $testSuiteModel, HookType::AfterEach(), TestSuiteTearDownException::class);
+                        yield $this->invokeHooks($testSuite, $testSuiteModel, HookType::AfterEach, TestSuiteTearDownException::class);
                     }
                     yield $this->emitter->emit(new TestCaseFinishedEvent($aggregateSummaryBuilder->finishTestCase($testCaseModel)));
                     ;
                 }
 
                 if (!$testSuiteModel->isDisabled()) {
-                    yield $this->invokeHooks($testSuite, $testSuiteModel, HookType::AfterAll(), TestSuiteTearDownException::class);
+                    yield $this->invokeHooks($testSuite, $testSuiteModel, HookType::AfterAll, TestSuiteTearDownException::class);
                 }
                 yield $this->emitter->emit(new TestSuiteFinishedEvent($aggregateSummaryBuilder->finishTestSuite($testSuiteModel)));
             }
@@ -188,13 +188,13 @@ final class TestSuiteRunner {
                 try {
                     yield call([$hookTarget, $hookMethodModel->getMethod()], ...$args);
                 } catch (Throwable $throwable) {
-                    $hookTypeInflected = str_starts_with($hookType->toString(), 'Before') ? 'setting up' : 'tearing down';
+                    $hookTypeInflected = str_starts_with($hookType->value, 'Before') ? 'setting up' : 'tearing down';
                     $msg = sprintf(
                         'Failed %s "%s::%s" #[%s] hook with exception of type "%s" with code %d and message "%s".',
                         $hookTypeInflected,
                         is_string($hookTarget) ? $hookTarget : $hookTarget::class,
                         $hookMethodModel->getMethod(),
-                        $hookType->toString(),
+                        $hookType->value,
                         $throwable::class,
                         $throwable->getCode(),
                         $throwable->getMessage()
@@ -248,8 +248,8 @@ final class TestSuiteRunner {
                 $mockBridge->initialize();
             }
 
-            yield $this->invokeHooks($testCase->testSuite(), $testSuiteModel, HookType::BeforeEachTest(), TestSetupException::class);
-            yield $this->invokeHooks($testCase, $testCaseModel, HookType::BeforeEach(), TestSetupException::class);
+            yield $this->invokeHooks($testCase->testSuite(), $testSuiteModel, HookType::BeforeEachTest, TestSetupException::class);
+            yield $this->invokeHooks($testCase, $testCaseModel, HookType::BeforeEach, TestSetupException::class);
 
             $testCaseMethod = $testModel->getMethod();
             $failureException = null;
@@ -296,23 +296,23 @@ final class TestSuiteRunner {
                     $failureException = yield $expectationContext->validateExpectations();
                 }
                 if (is_null($failureException)) {
-                    $state = TestState::Passed();
+                    $state = TestState::Passed;
                 } else if ($failureException instanceof TestFailedException) {
-                    $state = TestState::Failed();
+                    $state = TestState::Failed;
                 } else {
-                    $state = TestState::Errored();
+                    $state = TestState::Errored;
                 }
                 $testResult = $this->getTestResult($testCase, $testCaseMethod, $state, $timer->stop(), $failureException, $dataSetLabel);
             }
 
-            yield $this->invokeHooks($testCase, $testCaseModel, HookType::AfterEach(), TestTearDownException::class);
-            yield $this->invokeHooks($testCase->testSuite(), $testSuiteModel, HookType::AfterEachTest(), TestTearDownException::class);
+            yield $this->invokeHooks($testCase, $testCaseModel, HookType::AfterEach, TestTearDownException::class);
+            yield $this->invokeHooks($testCase->testSuite(), $testSuiteModel, HookType::AfterEachTest, TestTearDownException::class);
 
             yield $this->emitter->emit(new TestProcessedEvent($testResult));
 
-            if (TestState::Passed()->equals($testResult->getState())) {
+            if (TestState::Passed === $testResult->getState()) {
                 yield $this->emitter->emit(new TestPassedEvent($testResult));
-            } else if (TestState::Errored()->equals($testResult->getState())) {
+            } else if (TestState::Errored === $testResult->getState()) {
                 yield $this->emitter->emit(new TestErroredEvent($testResult));
             } else {
                 yield $this->emitter->emit(new TestFailedEvent($testResult));
@@ -356,7 +356,7 @@ final class TestSuiteRunner {
             }
 
             public function getState() : TestState {
-                return TestState::Disabled();
+                return TestState::Disabled;
             }
 
             public function getDuration() : Duration {

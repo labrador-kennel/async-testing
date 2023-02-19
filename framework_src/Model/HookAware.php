@@ -15,14 +15,14 @@ trait HookAware {
      * @return HookModel[]
      */
     public function getHooks(HookType $hookType) : array {
-        return $this->hooks[$hookType->toString()] ?? [];
+        return $this->hooks[$hookType->name] ?? [];
     }
 
     public function addHook(HookModel $hook) : void {
-        if (!isset($this->hooks[$hook->getType()->toString()])) {
-            $this->hooks[$hook->getType()->toString()] = [];
+        if (!isset($this->hooks[$hook->getType()->name])) {
+            $this->hooks[$hook->getType()->name] = [];
         }
-        $this->hooks[$hook->getType()->toString()][] = $hook;
+        $this->hooks[$hook->getType()->name][] = $hook;
     }
 
 }

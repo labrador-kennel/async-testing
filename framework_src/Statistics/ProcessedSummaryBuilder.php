@@ -60,10 +60,10 @@ final class ProcessedSummaryBuilder {
         $timer = new Timer();
         $key = $testCaseModel->isDisabled() ? 'disabled' : 'enabled';
         $this->testSuites[$testCaseModel->getTestSuiteClass()][$key][$testCaseModel->getClass()] = [
-            TestState::Passed()->toString() => [],
-            TestState::Failed()->toString() => [],
-            TestState::Disabled()->toString() => [],
-            TestState::Errored()->toString() => [],
+            TestState::Passed->name => [],
+            TestState::Failed->name => [],
+            TestState::Disabled->name => [],
+            TestState::Errored->name => [],
             'timer' => $timer
         ];
         $this->totalTestCaseCount++;
@@ -90,14 +90,14 @@ final class ProcessedSummaryBuilder {
             if ($state === 'duration') {
                 continue;
             }
-            $coalescedTests = array_merge($coalescedTests, array_keys($stateTests));
-            if ($state === TestState::Disabled()->toString()) {
+            $coalescedTests = [...$coalescedTests, ...array_keys($stateTests)];
+            if ($state === TestState::Disabled->name) {
                 $disabledTestCount += count($stateTests);
-            } else if ($state === TestState::Passed()->toString()) {
+            } else if ($state === TestState::Passed->name) {
                 $passedTestCount += count($stateTests);
-            } else if ($state === TestState::Failed()->toString()) {
+            } else if ($state === TestState::Failed->name) {
                 $failedTestCount += count($stateTests);
-            } else if ($state === TestState::Errored()->toString()) {
+            } else if ($state === TestState::Errored->name) {
                 $erroredTestCount += count($stateTests);
             }
             foreach ($stateTests as $test) {
@@ -183,7 +183,7 @@ final class ProcessedSummaryBuilder {
         $testSuiteClass = $testResult->getTestCase()->testSuite()::class;
         $testCaseClass = $testResult->getTestCase()::class;
         $key =  isset($this->testSuites[$testSuiteClass]['enabled'][$testCaseClass]) ? 'enabled' : 'disabled';
-        $stateKey = $testResult->getState()->toString();
+        $stateKey = $testResult->getState()->name;
 
         if (is_null($testResult->getDataSetLabel())) {
             $testName = sprintf('%s::%s', $testCaseClass, $testResult->getTestMethod());
@@ -198,13 +198,13 @@ final class ProcessedSummaryBuilder {
         $this->totalTestCount++;
         $this->assertionCount += $testResult->getTestCase()->getAssertionCount();
         $this->asyncAssertionCount += $testResult->getTestCase()->getAsyncAssertionCount();
-        if (TestState::Disabled()->equals($testResult->getState())) {
+        if (TestState::Disabled === $testResult->getState()) {
             $this->disabledTestCount++;
-        } else if (TestState::Passed()->equals($testResult->getState())) {
+        } else if (TestState::Passed === $testResult->getState()) {
             $this->passedTestCount++;
-        } else if (TestState::Failed()->equals($testResult->getState())) {
+        } else if (TestState::Failed === $testResult->getState()) {
             $this->failedTestCount++;
-        } else if (TestState::Errored()->equals($testResult->getState())) {
+        } else if (TestState::Errored === $testResult->getState()) {
             $this->erroredTestCount++;
         }
     }
@@ -322,15 +322,15 @@ final class ProcessedSummaryBuilder {
         $asyncAssertionCount = 0;
         foreach ($enabledTestCases as $testCase) {
             $tests = $this->testSuites[$testSuiteName]['enabled'][$testCase];
-            $passedTestCount += count($tests[TestState::Passed()->toString()]);
-            $failedTestCount += count($tests[TestState::Failed()->toString()]);
-            $erroredTestCount += count($tests[TestState::Errored()->toString()]);
-            $disabledTestCount += count($tests[TestState::Disabled()->toString()]);
-            foreach ($tests[TestState::Passed()->toString()] as $assertionCounts) {
+            $passedTestCount += count($tests[TestState::Passed->name]);
+            $failedTestCount += count($tests[TestState::Failed->name]);
+            $erroredTestCount += count($tests[TestState::Errored->name]);
+            $disabledTestCount += count($tests[TestState::Disabled->name]);
+            foreach ($tests[TestState::Passed->name] as $assertionCounts) {
                 $assertionCount += $assertionCounts['assertion'];
                 $asyncAssertionCount += $assertionCounts['asyncAssertion'];
             }
-            foreach ($tests[TestState::Failed()->toString()] as $assertionCounts) {
+            foreach ($tests[TestState::Failed->name] as $assertionCounts) {
                 $assertionCount += $assertionCounts['assertion'];
                 $asyncAssertionCount += $assertionCounts['asyncAssertion'];
             }
@@ -338,9 +338,9 @@ final class ProcessedSummaryBuilder {
 
         foreach ($disabledTestCases as $testCase) {
             $tests = $this->testSuites[$testSuiteName]['disabled'][$testCase];
-            $disabledTestCount += count($tests[TestState::Disabled()->toString()]);
-            $passedDisabledTestCount = count($tests[TestState::Passed()->toString()]);
-            $failedDisabledTestCount = count($tests[TestState::Failed()->toString()]);
+            $disabledTestCount += count($tests[TestState::Disabled->name]);
+            $passedDisabledTestCount = count($tests[TestState::Passed->name]);
+            $failedDisabledTestCount = count($tests[TestState::Failed->name]);
 
             // TODO make sure this logs a warning when we implement our logger
             assert($passedDisabledTestCount === 0, 'A disabled TestCase had passed tests associated to it.');

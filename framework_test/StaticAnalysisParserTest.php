@@ -291,10 +291,10 @@ class StaticAnalysisParserTest extends PHPUnitTestCase {
 
     public function hooksProvider() : array {
         return [
-            [HookType::BeforeAll(), 'HasSingleBeforeAllHook', 'beforeAll'],
-            [HookType::BeforeEach(), 'HasSingleBeforeEachHook', 'beforeEach'],
-            [HookType::AfterAll(), 'HasSingleAfterAllHook', 'afterAll'],
-            [HookType::AfterEach(), 'HasSingleAfterEachHook', 'afterEach']
+            [HookType::BeforeAll, 'HasSingleBeforeAllHook', 'beforeAll'],
+            [HookType::BeforeEach, 'HasSingleBeforeEachHook', 'beforeEach'],
+            [HookType::AfterAll, 'HasSingleAfterAllHook', 'afterAll'],
+            [HookType::AfterEach, 'HasSingleAfterEachHook', 'afterEach']
         ];
     }
 
@@ -592,10 +592,10 @@ class StaticAnalysisParserTest extends PHPUnitTestCase {
 
     public function hookPriorityProvider() : array {
         return [
-            [HookType::BeforeAll(), 'beforeAll'],
-            [HookType::AfterAll(), 'afterAll'],
-            [HookType::BeforeEach(), 'beforeEach'],
-            [HookType::AfterEach(), 'afterEach']
+            [HookType::BeforeAll, 'beforeAll'],
+            [HookType::AfterAll, 'afterAll'],
+            [HookType::BeforeEach, 'beforeEach'],
+            [HookType::AfterEach, 'afterEach']
         ];
     }
 
@@ -631,8 +631,8 @@ class StaticAnalysisParserTest extends PHPUnitTestCase {
         return array_merge(
             $this->hookPriorityProvider(),
             [
-                [HookType::BeforeEachTest(), 'beforeEachTest'],
-                [HookType::AfterEachTest(), 'afterEachTest']
+                [HookType::BeforeEachTest, 'beforeEachTest'],
+                [HookType::AfterEachTest, 'afterEachTest']
             ]
         );
 

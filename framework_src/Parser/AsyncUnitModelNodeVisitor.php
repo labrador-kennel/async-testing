@@ -177,7 +177,7 @@ final class AsyncUnitModelNodeVisitor extends NodeVisitorAbstract implements Nod
             new HookModel(
                 (string) $className,
                 $classMethod->name->toString(),
-                HookType::BeforeEach(),
+                HookType::BeforeEach,
                 $this->getPriority($attribute)
             )
         );
@@ -200,7 +200,7 @@ final class AsyncUnitModelNodeVisitor extends NodeVisitorAbstract implements Nod
             new HookModel(
                 (string) $className,
                 $classMethod->name->toString(),
-                HookType::AfterEach(),
+                HookType::AfterEach,
                 $this->getPriority($attribute)
             )
         );
@@ -233,7 +233,7 @@ final class AsyncUnitModelNodeVisitor extends NodeVisitorAbstract implements Nod
             new HookModel(
                 (string) $className,
                 $classMethod->name->toString(),
-                HookType::BeforeAll(),
+                HookType::BeforeAll,
                 $this->getPriority($attribute)
             )
         );
@@ -265,7 +265,7 @@ final class AsyncUnitModelNodeVisitor extends NodeVisitorAbstract implements Nod
             new HookModel(
                 $className,
                 $classMethod->name->toString(),
-                HookType::AfterAll(),
+                HookType::AfterAll,
                 $this->getPriority($attribute)
             )
         );
@@ -277,7 +277,7 @@ final class AsyncUnitModelNodeVisitor extends NodeVisitorAbstract implements Nod
             new HookModel(
                 $className,
                 $classMethod->name->toString(),
-                HookType::BeforeEachTest(),
+                HookType::BeforeEachTest,
                 $this->getPriority($attribute)
             )
         );
@@ -289,7 +289,7 @@ final class AsyncUnitModelNodeVisitor extends NodeVisitorAbstract implements Nod
             new HookModel(
                 $className,
                 $classMethod->name->toString(),
-                HookType::AfterEachTest(),
+                HookType::AfterEachTest,
                 $this->getPriority($attribute)
             )
         );
