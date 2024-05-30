@@ -2,11 +2,12 @@
 
 namespace Cspray\Labrador\AsyncUnit;
 
-use Amp\ByteStream\OutputStream;
-use Cspray\Labrador\AsyncEvent\EventEmitter;
-use Cspray\Labrador\AsyncUnit\Event\ProcessingFinishedEvent;
-use Cspray\Labrador\Engine;
-use Cspray\Labrador\Environment;
+use Amp\ByteStream\WritableStream;
+use Cspray\Labrador\AsyncUnit\Configuration\AsyncUnitConfigurationValidator;
+use Cspray\Labrador\AsyncUnit\Configuration\ConfigurationFactory;
+use Cspray\Labrador\AsyncUnit\Context\CustomAssertionContext;
+use Cspray\Labrador\AsyncUnit\Parser\StaticAnalysisParser;
+use Labrador\AsyncEvent\EventEmitter;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -19,32 +20,47 @@ use Psr\Log\LoggerInterface;
  */
 final class AsyncUnitFrameworkRunner {
 
+    /**
+     * @var list<ResultPrinterPlugin>
+     */
+    private array $resultPrinterPlugins = [];
+
+    /**
+     * @var list<CustomAssertionPlugin>
+     */
+    private array $customAssertionPlugin = [];
+
     public function __construct(
-        private Environment $environment,
-        private LoggerInterface $logger,
-        private ConfigurationFactory $configurationFactory,
-        private OutputStream $testResultOutput,
-        private ?MockBridgeFactory $mockBridgeFactory = null
+        private readonly LoggerInterface $logger,
+        private readonly EventEmitter $emitter,
+        private readonly ConfigurationFactory $configurationFactory,
+        private readonly WritableStream $testResultOutput,
+        private readonly ?MockBridgeFactory $mockBridgeFactory = null
     ) {}
 
-    public function run(string $configFile) : bool {
-        $injector = (new AsyncUnitApplicationObjectGraph(
-            $this->environment,
-            $this->logger,
+    public function registerPlugin(ResultPrinterPlugin|CustomAssertionPlugin $plugin) : void {
+        if ($plugin instanceof ResultPrinterPlugin) {
+            $this->resultPrinterPlugins[] = $plugin;
+        } else {
+            $this->customAssertionPlugin[] = $plugin;
+        }
+    }
+
+    public function run(string $configFile) : void {
+        $application = new AsyncUnitApplication(
+            new AsyncUnitConfigurationValidator(),
             $this->configurationFactory,
-            $this->testResultOutput,
-            $configFile,
-            $this->mockBridgeFactory
-        ))->wireObjectGraph();
+            new StaticAnalysisParser(),
+            new TestSuiteRunner(
+                $this->emitter,
+                new CustomAssertionContext(),
+                new ShuffleRandomizer(),
+                $this->mockBridgeFactory ?? new NoConstructorMockBridgeFactory()
+            ),
+            $configFile
+        );
 
-        $emitter = $injector->make(EventEmitter::class);
-        $hasFailedTests = false;
-        $emitter->once(Events::PROCESSING_FINISHED, function(ProcessingFinishedEvent $event) use(&$hasFailedTests) {
-            $hasFailedTests = $event->getTarget()->getFailedTestCount() !== 0;
-        });
-
-        $injector->execute(Engine::class . '::run');
-        return !$hasFailedTests;
+        $application->run();
     }
 
 }

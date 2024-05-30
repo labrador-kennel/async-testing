@@ -1,11 +1,11 @@
 <?php declare(strict_types=1);
 
-namespace Cspray\Labrador\AsyncUnit;
+namespace Cspray\Labrador\AsyncUnit\Configuration;
 
 final class ConfigurationValidationResults {
 
     public function __construct(
-        private array $validationErrors
+        private readonly array $validationErrors
     ) {}
 
     public function isValid() : bool {

@@ -8,6 +8,7 @@ use Cspray\Labrador\AsyncUnit\Model\PluginModel;
 use Cspray\Labrador\AsyncUnit\Model\TestCaseModel;
 use Cspray\Labrador\AsyncUnit\Model\TestModel;
 use Cspray\Labrador\AsyncUnit\Model\TestSuiteModel;
+use Cspray\Labrador\AsyncUnit\TestSuite;
 
 /**
  * @internal
@@ -17,7 +18,7 @@ final class AsyncUnitModelCollector {
     private ?string $defaultTestSuite = null;
 
     /**
-     * @var TestSuiteModel[]
+     * @var array<class-string<TestSuite>, TestSuiteModel>
      */
     private array $testSuiteModels = [];
 
@@ -94,6 +95,7 @@ final class AsyncUnitModelCollector {
                 // defined that matches the given test case namespace.
                 $testCaseTestSuite = null;
                 $testCaseNamespace = $testCaseModel->getNamespace();
+                /** @var class-string<TestSuite> $testSuiteClass */
                 foreach (array_keys($this->testSuiteModels) as $testSuiteClass) {
                     $testSuiteAttachNamespaces = $testSuiteClass::getNamespacesToAttach();
                     foreach ($testSuiteAttachNamespaces as $testSuiteAttachNamespace) {

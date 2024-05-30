@@ -2,9 +2,9 @@
 
 namespace Cspray\Labrador\AsyncUnit\Event;
 
-use Cspray\Labrador\AsyncEvent\StandardEvent;
 use Cspray\Labrador\AsyncUnit\Events;
 use Cspray\Labrador\AsyncUnit\Statistics\AggregateSummary;
+use Labrador\AsyncEvent\StandardEvent;
 
 final class ProcessingStartedEvent extends StandardEvent {
 
@@ -13,7 +13,9 @@ final class ProcessingStartedEvent extends StandardEvent {
     }
 
     public function getTarget() : AggregateSummary {
-        return parent::getTarget();
+        $target = parent::getTarget();
+        assert($target instanceof AggregateSummary);
+        return $target;
     }
 
 }

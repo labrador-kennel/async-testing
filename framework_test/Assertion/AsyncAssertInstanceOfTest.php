@@ -2,15 +2,14 @@
 
 namespace Cspray\Labrador\AsyncUnit\Assertion;
 
-use Amp\Loop;
-use Amp\Success;
+use Amp\Future;
 use Cspray\Labrador\AsyncUnit\Assertion\AssertionMessage\InstanceOfMessage;
 use Cspray\Labrador\AsyncUnit\Assertion\AssertionMessage\TrueUnaryOperandSummary;
 use Cspray\Labrador\AsyncUnit\AssertionMessage;
-use Cspray\Labrador\AsyncUnit\Exception\Exception;
 use Cspray\Labrador\AsyncUnit\Exception\InvalidArgumentException;
 use Cspray\Labrador\AsyncUnit\Exception\InvalidStateException;
 use PHPUnit\Framework\TestCase;
+use Revolt\EventLoop;
 
 class AsyncAssertInstanceOfTest extends TestCase {
 
@@ -19,40 +18,34 @@ class AsyncAssertInstanceOfTest extends TestCase {
         $this->expectExceptionMessage(sprintf(
             'The expected value must be a valid class but %s was given', var_export('not a class', true)
         ));
-        new AsyncAssertInstanceOf('not a class', new Success(new \stdClass()));
+        new AsyncAssertInstanceOf('not a class', Future::complete(new \stdClass()));
     }
 
     public function testInstanceOfInterfaceIsValid() {
-        Loop::run(function() {
-            $subject = new AsyncAssertInstanceOf(AssertionMessage::class, new Success(new TrueUnaryOperandSummary('something')));
-            $results = yield $subject->assert();
+            $subject = new AsyncAssertInstanceOf(AssertionMessage::class, Future::complete(new TrueUnaryOperandSummary('something')));
+            $results = $subject->assert()->await();
 
             $this->assertTrue($results->isSuccessful());
             $this->assertInstanceOf(InstanceOfMessage::class, $results->getSummary());
             $this->assertInstanceOf(InstanceOfMessage::class, $results->getDetails());
-        });
     }
 
     public function testInstanceOfTypeIsNotInstance() {
-        Loop::run(function() {
-            $subject = new AsyncAssertInstanceOf(TestCase::class, new Success(new TrueUnaryOperandSummary('foo')));
-            $results = yield $subject->assert();
+        $subject = new AsyncAssertInstanceOf(TestCase::class, Future::complete(new TrueUnaryOperandSummary('foo')));
+        $results = $subject->assert()->await();
 
-            $this->assertFalse($results->isSuccessful());
-            $this->assertInstanceOf(InstanceOfMessage::class, $results->getSummary());
-            $this->assertInstanceOf(InstanceOfMessage::class, $results->getDetails());
-        });
+        $this->assertFalse($results->isSuccessful());
+        $this->assertInstanceOf(InstanceOfMessage::class, $results->getSummary());
+        $this->assertInstanceOf(InstanceOfMessage::class, $results->getDetails());
     }
 
     public function testPassingObjectAsExpected() {
-        Loop::run(function() {
-            $subject = new AsyncAssertInstanceOf(new InvalidStateException(), new Success(new InvalidArgumentException()));
-            $results = yield $subject->assert();
+        $subject = new AsyncAssertInstanceOf(new InvalidStateException(), Future::complete(new InvalidArgumentException()));
+        $results = $subject->assert()->await();
 
-            $this->assertFalse($results->isSuccessful());
-            $this->assertInstanceOf(InstanceOfMessage::class, $results->getSummary());
-            $this->assertInstanceOf(InstanceOfMessage::class, $results->getDetails());
-        });
+        $this->assertFalse($results->isSuccessful());
+        $this->assertInstanceOf(InstanceOfMessage::class, $results->getSummary());
+        $this->assertInstanceOf(InstanceOfMessage::class, $results->getDetails());
     }
 
 }

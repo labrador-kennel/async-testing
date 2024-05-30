@@ -2,7 +2,7 @@
 
 namespace Cspray\Labrador\AsyncUnit\Stub;
 
-use Amp\Success;
+use Amp\Future;
 use Cspray\Labrador\AsyncUnit\TestCase;
 
 class FailingTestCase extends TestCase {
@@ -12,7 +12,7 @@ class FailingTestCase extends TestCase {
     }
 
     public function doAsyncFailure() {
-        yield $this->asyncAssert()->stringEquals('foo', new Success('bar'));
+        $this->asyncAssert()->stringEquals('foo', Future::complete('bar'));
     }
 
     public function doFailureWithCustomMessage() {

@@ -14,7 +14,6 @@ class BarTestCase extends TestCase {
 
     #[Test]
     public function ensureSomething() {
-        yield new Delayed(100);
         $this->testInvoked = true;
     }
 

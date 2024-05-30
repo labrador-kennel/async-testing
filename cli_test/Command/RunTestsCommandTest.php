@@ -2,9 +2,8 @@
 
 namespace Cspray\Labrador\AsyncUnitCli\Command;
 
-use Amp\Loop;
-use Amp\Success;
-// Need to figure out how to share this properly between the 2 codebases
+use Amp\File\Driver\BlockingFilesystemDriver;
+use Amp\Future;
 use Cspray\Labrador\AsyncUnit\UsesAcmeSrc;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Tester\CommandTester;
@@ -16,10 +15,10 @@ class RunTestsCommandTest extends BaseCommandTest {
 
     public function testRunningCommandWithNoConfigurationPromptsToGenerateOne() {
         $application = $this->createApplication($configPath = __DIR__ . '/not-found.json');
-        $this->filesystem->expects($this->once())
-            ->method('isfile')
+        $this->driver->expects($this->once())
+            ->method('getStatus')
             ->with($configPath)
-            ->willReturn(new Success(false));
+            ->willReturn(null);
 
         $command = $application->find('run');
         $commandTester = new CommandTester($command);
@@ -39,10 +38,10 @@ shell;
 
     public function testConfigOptionOverridesLocationOfConfigurationFile() {
         $application = $this->createApplication(__DIR__ . '/not-found.json');
-        $this->filesystem->expects($this->once())
-            ->method('isfile')
+        $this->driver->expects($this->once())
+            ->method('getStatus')
             ->with('/my/overridden/path')
-            ->willReturn(new Success(false));
+            ->willReturn(null);
 
         $command = $application->find('run');
         $commandTester = new CommandTester($command);
@@ -65,12 +64,12 @@ shell;
     public function testRunningCommandWithNoConfigurationGeneratesWhenPromptAnswersYes() {
         return $this->markTestSkipped('This will require a more thorough solution for file system mocking.');
         $application = $this->createApplication($configPath = __DIR__ . '/not-found.json');
-        $this->filesystem->expects($this->exactly(2))
+        $this->driver->expects($this->exactly(2))
             ->method('isfile')
             ->with($configPath)
             ->willReturn(new Success(false));
 
-        $this->filesystem->expects($this->once())
+        $this->driver->expects($this->once())
             ->method('put')
             ->with($configPath, $this->getDefaultConfigurationJson())
             ->willReturn(new Success());
@@ -94,7 +93,7 @@ shell;
     public function testRunningCommandWithConfigRunsTests() {
         $application = $this->createApplication(
             $this->implicitDefaultTestSuitePath('SingleTest/async-unit.json'),
-            filesystem()
+            new BlockingFilesystemDriver()
         );
 
         $command = $application->find('run');
@@ -104,11 +103,7 @@ shell;
         $this->assertSame('', $actual);
         $this->assertSame(Command::SUCCESS, $commandTester->getStatusCode());
 
-        $testResultOutput = '';
-        Loop::run(function() use(&$testResultOutput) {
-            Loop::defer(fn() => yield $this->testResultBuffer->end());
-            $testResultOutput .= yield $this->testResultBuffer;
-        });
+        $testResultOutput = $this->testResultBuffer->buffer();
         // Actual style of output will be tested in an integration test
         $this->assertNotEmpty($testResultOutput);
     }

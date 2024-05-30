@@ -2,8 +2,8 @@
 
 namespace Cspray\Labrador\AsyncUnit\Constraint;
 
+use Cspray\Labrador\AsyncUnit\Exception\InvalidArgumentException;
 use Cspray\Labrador\AsyncUnit\Model\TestCaseModel;
-use Cspray\Labrador\Exception\InvalidArgumentException;
 use PHPUnit\Framework\Constraint\Constraint;
 
 class TestCaseModelHasTestMethod extends Constraint {

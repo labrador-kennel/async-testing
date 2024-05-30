@@ -3,6 +3,7 @@
 namespace Cspray\Labrador\AsyncUnit\Assertion;
 
 use Amp\Coroutine;
+use Amp\Future;
 use Amp\Promise;
 use Cspray\Labrador\AsyncUnit\Assertion\AssertionMessage\EmptyUnaryOperandDetails;
 use Cspray\Labrador\AsyncUnit\Assertion\AssertionMessage\EmptyUnaryOperandSummary;
@@ -12,7 +13,7 @@ use PHPUnit\Framework\TestCase;
 
 class AsyncAssertIsEmptyTest extends AbstractAsyncAssertionTestCase {
 
-    protected function getAssertion(mixed $expected, Promise|Coroutine|Generator $actual) : AsyncAssertion {
+    protected function getAssertion(mixed $expected, Future|Generator $actual) : AsyncAssertion {
         return new AsyncAssertIsEmpty($actual);
     }
 

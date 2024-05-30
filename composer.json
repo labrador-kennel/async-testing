@@ -6,16 +6,15 @@
   ],
   "require": {
     "php": "^8.2",
-    "amphp/amp": "^2",
-    "nikic/php-parser": "^4.10",
-    "cspray/labrador-async-event": "^2.3",
-    "cspray/labrador": "^3.2",
-    "symfony/console": "^5.2",
+    "amphp/amp": "^3",
+    "amphp/byte-stream": "^v2.0",
+    "amphp/file": "^3.0",
+    "cspray/labrador-async-event": "^3.0",
+    "cspray/labrador-styled-byte-stream": "^0.2",
     "opis/json-schema": "^2.0",
-    "amphp/byte-stream": "^1.8",
+    "nikic/php-parser": "^4.10",
     "phpunit/php-timer": "^5.0",
-    "amphp/file": "^1.0",
-    "cspray/labrador-styled-byte-stream": "^0.1.0"
+    "psr/log": "^2.0 || ^3.0"
   },
   "require-dev": {
     "roave/security-advisories": "dev-latest",

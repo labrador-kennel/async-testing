@@ -2,18 +2,17 @@
 
 namespace Acme\DemoSuites\ImplicitDefaultTestSuite\TestHasTimeout;
 
-use Amp\Delayed;
 use Cspray\Labrador\AsyncUnit\Attribute\Test;
 use Cspray\Labrador\AsyncUnit\Attribute\Timeout;
 use Cspray\Labrador\AsyncUnit\TestCase;
-use Generator;
+use function Amp\delay;
 
 class MyTestCase extends TestCase {
 
     #[Test]
     #[Timeout(100)]
-    public function timeOutTest() : Generator {
-        yield new Delayed(200);
+    public function timeOutTest() : void {
+        delay(0.500);
         $this->assert()->stringEquals('a', 'a');
     }
 

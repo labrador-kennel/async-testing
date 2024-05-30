@@ -2,7 +2,6 @@
 
 namespace Acme\DemoSuites\ImplicitDefaultTestSuite\HasSingleBeforeAllHook;
 
-use Amp\Delayed;
 use Cspray\Labrador\AsyncUnit\Attribute\BeforeAll;
 use Cspray\Labrador\AsyncUnit\Attribute\Test;
 use Cspray\Labrador\AsyncUnit\TestCase;
@@ -18,8 +17,7 @@ class MyTestCase extends TestCase {
     }
 
     #[BeforeAll]
-    public static function beforeAll() : Generator {
-        yield new Delayed(100);
+    public static function beforeAll() : void {
         self::$staticData[] = 'beforeAll';
     }
 

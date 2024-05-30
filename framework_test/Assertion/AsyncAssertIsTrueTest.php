@@ -3,6 +3,7 @@
 namespace Cspray\Labrador\AsyncUnit\Assertion;
 
 use Amp\Coroutine;
+use Amp\Future;
 use Amp\Promise;
 use Cspray\Labrador\AsyncUnit\Assertion\AssertionMessage\TrueUnaryOperandDetails;
 use Cspray\Labrador\AsyncUnit\Assertion\AssertionMessage\TrueUnaryOperandSummary;
@@ -11,7 +12,7 @@ use Generator;
 
 class AsyncAssertIsTrueTest extends AbstractAsyncAssertionTestCase {
 
-    protected function getAssertion($expected, Promise|Generator|Coroutine $actual) : AsyncAssertion {
+    protected function getAssertion($expected, Future|Generator $actual) : AsyncAssertion {
         return new AsyncAssertIsTrue($actual);
     }
 

@@ -5,7 +5,7 @@
   "description": "Declares the format of a valid asyncunit.json file to run AsyncUnit tests.",
   "type": "object",
   "properties": {
-    "testDirs": {
+    "testDirectories": {
       "type": "array",
       "minItems": 1,
       "items": {
@@ -30,6 +30,6 @@
       }
     }
   },
-  "required": ["testDirs", "resultPrinter"],
+  "required": ["testDirectories", "resultPrinter"],
   "additionalProperties": false
 }

@@ -38,44 +38,35 @@ class JsonConfigurationFactoryTest extends TestCase {
      * @dataProvider badSchemaProvider
      */
     public function testBadSchemaThrowsException(string $file) {
-        Loop::run(function() use($file) {
-            $this->expectException(InvalidConfigurationException::class);
-            $this->expectExceptionMessage(sprintf(
-                'The JSON file at "%s" does not adhere to the JSON Schema https://labrador-kennel.io/dev/async-unit/schema/cli-config.json',
-                $file
-            ));
+        $this->expectException(InvalidConfigurationException::class);
+        $this->expectExceptionMessage(sprintf(
+            'The JSON file at "%s" does not adhere to the JSON Schema https://labrador-kennel.io/dev/async-unit/schema/cli-config.json',
+            $file
+        ));
 
-            yield $this->subject->make($file);
-        });
+        $this->subject->make($file);
     }
 
     public function testMinimallyValidReturnsCorrectInformation() {
-        Loop::run(function() {
-            /** @var Configuration $configuration */
-            $configuration = yield $this->subject->make(__DIR__ . '/Resources/dummy_configs/minimally_valid.json');
+        $configuration = $this->subject->make(__DIR__ . '/Resources/dummy_configs/minimally_valid.json');
 
-            $this->assertSame([getcwd()], $configuration->getTestDirectories());
-            $this->assertSame(TerminalResultPrinter::class, $configuration->getResultPrinter());
-            $this->assertEmpty($configuration->getPlugins());
-        });
+        $this->assertSame([getcwd()], $configuration->getTestDirectories());
+        $this->assertSame(TerminalResultPrinter::class, $configuration->getResultPrinter());
+        $this->assertEmpty($configuration->getPlugins());
     }
 
     public function testHasPluginsReturnsCorrectInformation() {
-        Loop::run(function() {
-            $configuration = yield $this->subject->make(__DIR__ . '/Resources/dummy_configs/has_plugins.json');
+        $configuration = $this->subject->make(__DIR__ . '/Resources/dummy_configs/has_plugins.json');
 
-            $this->assertSame([getcwd()], $configuration->getTestDirectories());
-            $this->assertSame(['FooBar'], $configuration->getPlugins());
-        });
+        $this->assertSame([getcwd()], $configuration->getTestDirectories());
+        $this->assertSame(['FooBar'], $configuration->getPlugins());
     }
 
     public function testHasMockBridgeReturnsCorrectInformation() {
-        Loop::run(function() {
-            $configuration = yield $this->subject->make(__DIR__ . '/Resources/dummy_configs/has_mock_bridge.json');
+        $configuration = $this->subject->make(__DIR__ . '/Resources/dummy_configs/has_mock_bridge.json');
 
-            $this->assertSame([getcwd()], $configuration->getTestDirectories());
-            $this->assertSame(MockeryMockBridge::class, $configuration->getMockBridge());
-        });
+        $this->assertSame([getcwd()], $configuration->getTestDirectories());
+        $this->assertSame(MockeryMockBridge::class, $configuration->getMockBridge());
     }
 
 }

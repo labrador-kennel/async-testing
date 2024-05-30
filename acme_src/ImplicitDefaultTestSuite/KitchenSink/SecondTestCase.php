@@ -2,6 +2,7 @@
 
 namespace Acme\DemoSuites\ImplicitDefaultTestSuite\KitchenSink;
 
+use Amp\Future;
 use Amp\Success;
 use Cspray\Labrador\AsyncUnit\Attribute\AttachToTestSuite;
 use Cspray\Labrador\AsyncUnit\Attribute\Disabled;
@@ -14,7 +15,7 @@ class SecondTestCase extends TestCase {
     #[Test]
     public function checkTwo() {
         $this->assert()->instanceOf(TestCase::class, $this);
-        yield $this->asyncAssert()->instanceOf(TestCase::class, new Success($this));
+        $this->asyncAssert()->instanceOf(TestCase::class, Future::complete($this));
     }
 
     #[Test]

@@ -3,6 +3,7 @@
 namespace Cspray\Labrador\AsyncUnit\Assertion;
 
 use Amp\Coroutine;
+use Amp\Future;
 use Amp\Promise;
 use Cspray\Labrador\AsyncUnit\Assertion\AssertionComparisonDisplay\FalseAssertionComparisonDisplay;
 use Cspray\Labrador\AsyncUnit\Assertion\AssertionMessage\FalseUnaryOperandDetails;
@@ -13,7 +14,7 @@ use Generator;
 
 class AsyncAssertIsFalseTest extends AbstractAsyncAssertionTestCase {
 
-    protected function getAssertion($expected, Promise|Generator|Coroutine $actual) : AsyncAssertion {
+    protected function getAssertion($expected, Future|Generator $actual) : AsyncAssertion {
         return new AsyncAssertIsFalse($actual);
     }
 

@@ -2,6 +2,7 @@
 
 namespace Acme\DemoSuites\ImplicitDefaultTestSuite\KitchenSink;
 
+use Amp\Future;
 use Amp\Success;
 use Cspray\Labrador\AsyncUnit\Attribute\AttachToTestSuite;
 use Cspray\Labrador\AsyncUnit\Attribute\Disabled;
@@ -18,7 +19,7 @@ class FirstTestCase extends TestCase {
 
     #[Test]
     public function testTwo() {
-        yield $this->asyncAssert()->countEquals(4, new Success(['a', 'b', 'c', 'd']));
+        $this->asyncAssert()->countEquals(4, Future::complete(['a', 'b', 'c', 'd']));
     }
 
     #[Test]

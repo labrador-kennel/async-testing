@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Cspray\Labrador\AsyncUnit;
+namespace Cspray\Labrador\AsyncUnit\Configuration;
 
 interface Configuration {
 

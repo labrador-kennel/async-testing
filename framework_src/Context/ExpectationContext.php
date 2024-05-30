@@ -2,7 +2,6 @@
 
 namespace Cspray\Labrador\AsyncUnit\Context;
 
-use Amp\Promise;
 use Cspray\Labrador\AsyncUnit\Exception\MockFailureException;
 use Cspray\Labrador\AsyncUnit\Exception\TestErrorException;
 use Cspray\Labrador\AsyncUnit\Exception\TestFailedException;
@@ -10,7 +9,6 @@ use Cspray\Labrador\AsyncUnit\Exception\TestOutputException;
 use Cspray\Labrador\AsyncUnit\MockBridge;
 use Cspray\Labrador\AsyncUnit\Model\TestModel;
 use Throwable;
-use function Amp\call;
 
 final class ExpectationContext implements TestExpector {
 
@@ -25,10 +23,10 @@ final class ExpectationContext implements TestExpector {
     private ?int $expectedAssertionCount = null;
 
     private function __construct(
-        private TestModel $testModel,
-        private AssertionContext $assertionContext,
-        private AsyncAssertionContext $asyncAssertionContext,
-        private ?MockBridge $mockBridge
+        private readonly TestModel $testModel,
+        private readonly AssertionContext $assertionContext,
+        private readonly AsyncAssertionContext $asyncAssertionContext,
+        private readonly ?MockBridge $mockBridge
     ) {}
 
     public function setActualOutput(string $output) : void {
@@ -51,14 +49,12 @@ final class ExpectationContext implements TestExpector {
         $this->expectedAssertionCount = 0;
     }
 
-    public function validateExpectations() : Promise {
-        return call(function() {
-            return $this->validateThrownException() ??
-                $this->validateAssertionCount() ??
-                $this->validateOutput() ??
-                $this->validateMocks() ??
-                null;
-        });
+    public function validateExpectations() : TestFailedException|TestErrorException|TestOutputException|MockFailureException|null {
+        return $this->validateThrownException() ??
+            $this->validateAssertionCount() ??
+            $this->validateOutput() ??
+            $this->validateMocks() ??
+            null;
     }
 
     private function validateAssertionCount() : ?TestFailedException {

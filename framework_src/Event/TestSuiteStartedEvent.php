@@ -2,21 +2,20 @@
 
 namespace Cspray\Labrador\AsyncUnit\Event;
 
-use Cspray\Labrador\AsyncEvent\Event;
-use Cspray\Labrador\AsyncEvent\StandardEvent;
 use Cspray\Labrador\AsyncUnit\Events;
-use Cspray\Labrador\AsyncUnit\Model\TestSuiteModel;
 use Cspray\Labrador\AsyncUnit\Statistics\TestSuiteSummary;
-use Cspray\Labrador\AsyncUnit\TestSuite;
+use Labrador\AsyncEvent\StandardEvent;
 
-final class TestSuiteStartedEvent extends StandardEvent implements Event {
+final class TestSuiteStartedEvent extends StandardEvent {
 
     public function __construct(TestSuiteSummary $testSuiteSummary) {
         parent::__construct(Events::TEST_SUITE_STARTED, $testSuiteSummary);
     }
 
     public function getTarget() : TestSuiteSummary {
-        return parent::getTarget();
+        $target = parent::getTarget();
+        assert($target instanceof TestSuiteSummary);
+        return $target;
     }
 
 }

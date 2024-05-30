@@ -11,7 +11,7 @@ class CustomAssertionTestCase extends TestCase {
     }
 
     public function doCustomAsyncAssertion() {
-        yield $this->asyncAssert()->myCustomAssertion(1, 2, 3);
+        $this->asyncAssert()->myCustomAssertion(1, 2, 3);
     }
 
 }

@@ -2,7 +2,7 @@
 
 namespace Acme\DemoSuites\ImplicitDefaultTestSuite\SingleTestAsyncAssertion;
 
-use Amp\Success;
+use Amp\Future;
 use Cspray\Labrador\AsyncUnit\Attribute\Test;
 use Cspray\Labrador\AsyncUnit\TestCase;
 
@@ -10,7 +10,7 @@ class MyTestCase extends TestCase {
 
     #[Test]
     public function ensureAsyncAssert() {
-        yield $this->asyncAssert()->stringEquals('foo', new Success('foo'));
+        $this->asyncAssert()->stringEquals('foo', Future::complete('foo'));
     }
 
 }

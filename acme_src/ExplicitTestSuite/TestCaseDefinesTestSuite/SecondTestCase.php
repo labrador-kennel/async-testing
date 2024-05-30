@@ -2,7 +2,7 @@
 
 namespace Acme\DemoSuites\ExplicitTestSuite\TestCaseDefinesTestSuite;
 
-use Amp\Success;
+use Amp\Future;
 use Cspray\Labrador\AsyncUnit\Attribute\Test;
 use Cspray\Labrador\AsyncUnit\TestCase;
 use Cspray\Labrador\AsyncUnit\Attribute\AttachToTestSuite as TestSuiteAttribute;
@@ -12,8 +12,8 @@ use Generator;
 class SecondTestCase extends TestCase {
 
     #[Test]
-    public function ensureSomethingIsNull() : Generator {
-        yield $this->asyncAssert()->isNull(new Success(null));
+    public function ensureSomethingIsNull() : void {
+        $this->asyncAssert()->isNull(Future::complete());
     }
 
 }

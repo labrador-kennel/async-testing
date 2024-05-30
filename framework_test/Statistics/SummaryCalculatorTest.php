@@ -2,7 +2,6 @@
 
 namespace Cspray\Labrador\AsyncUnit\Statistics;
 
-use Amp\Loop;
 use Cspray\Labrador\AsyncUnit\ImplicitTestSuite;
 use Cspray\Labrador\AsyncUnit\Parser\StaticAnalysisParser;
 use Cspray\Labrador\AsyncUnit\UsesAcmeSrc;
@@ -29,12 +28,10 @@ class SummaryCalculatorTest extends TestCase {
      * @dataProvider aggregateSummaryTestSuiteNamesProvider
      */
     public function testGetAggregateSummaryGetTestSuiteNames(string $path, array $expected) : void {
-        Loop::run(function() use($path, $expected) {
-            $results = yield (new StaticAnalysisParser())->parse($path);
-            $calculator = new SummaryCalculator($results);
+        $results = (new StaticAnalysisParser())->parse($path);
+        $calculator = new SummaryCalculator($results);
 
-            $this->assertEqualsCanonicalizing($expected, $calculator->getAggregateSummary()->getTestSuiteNames());
-        });
+        $this->assertEqualsCanonicalizing($expected, $calculator->getAggregateSummary()->getTestSuiteNames());
     }
 
     public function aggregateSummaryTotalTestSuiteCountProvider() : array {
@@ -48,12 +45,10 @@ class SummaryCalculatorTest extends TestCase {
      * @dataProvider aggregateSummaryTotalTestSuiteCountProvider
      */
     public function testGetAggregateSummaryGetTotalTestSuiteCount(string $path, int $expected) : void {
-        Loop::run(function() use($path, $expected) {
-            $results = yield (new StaticAnalysisParser())->parse($path);
-            $calculator = new SummaryCalculator($results);
+        $results = (new StaticAnalysisParser())->parse($path);
+        $calculator = new SummaryCalculator($results);
 
-            $this->assertSame($expected, $calculator->getAggregateSummary()->getTotalTestSuiteCount());
-        });
+        $this->assertSame($expected, $calculator->getAggregateSummary()->getTotalTestSuiteCount());
     }
 
     public function aggregateSummaryDisabledTestSuiteCountProvider() : array {
@@ -68,12 +63,10 @@ class SummaryCalculatorTest extends TestCase {
      * @dataProvider aggregateSummaryDisabledTestSuiteCountProvider
      */
     public function testGetAggregateSummaryGetDisabledTestSuiteCount(string $path, int $expected) : void {
-        Loop::run(function() use($path, $expected) {
-            $results = yield (new StaticAnalysisParser())->parse($path);
-            $calculator = new SummaryCalculator($results);
+        $results = (new StaticAnalysisParser())->parse($path);
+        $calculator = new SummaryCalculator($results);
 
-            $this->assertSame($expected, $calculator->getAggregateSummary()->getDisabledTestSuiteCount());
-        });
+        $this->assertSame($expected, $calculator->getAggregateSummary()->getDisabledTestSuiteCount());
     }
 
     public function aggregateSummaryTotalTestCaseCountProvider() : array {
@@ -88,12 +81,10 @@ class SummaryCalculatorTest extends TestCase {
      * @dataProvider aggregateSummaryTotalTestCaseCountProvider
      */
     public function testGetAggregateSummaryGetTestCaseCount(string $path, int $expected) : void {
-        Loop::run(function() use($path, $expected) {
-            $results = yield (new StaticAnalysisParser())->parse($path);
-            $calculator = new SummaryCalculator($results);
+        $results = (new StaticAnalysisParser())->parse($path);
+        $calculator = new SummaryCalculator($results);
 
-            $this->assertSame($expected, $calculator->getAggregateSummary()->getTotalTestCaseCount());
-        });
+        $this->assertSame($expected, $calculator->getAggregateSummary()->getTotalTestCaseCount());
     }
 
     public function aggregateSummaryDisabledTestCaseCountProvider() : array {
@@ -108,12 +99,10 @@ class SummaryCalculatorTest extends TestCase {
      * @dataProvider aggregateSummaryDisabledTestCaseCountProvider
      */
     public function testGetAggregateSummaryGetDisabledTestCaseCount(string $path, int $expected) : void {
-        Loop::run(function() use($path, $expected) {
-            $results = yield (new StaticAnalysisParser())->parse($path);
-            $calculator = new SummaryCalculator($results);
+        $results = (new StaticAnalysisParser())->parse($path);
+        $calculator = new SummaryCalculator($results);
 
-            $this->assertSame($expected, $calculator->getAggregateSummary()->getDisabledTestCaseCount());
-        });
+        $this->assertSame($expected, $calculator->getAggregateSummary()->getDisabledTestCaseCount());
     }
 
     public function aggregateSummaryTotalTestCountProvider() : array {
@@ -128,12 +117,10 @@ class SummaryCalculatorTest extends TestCase {
      * @dataProvider aggregateSummaryTotalTestCountProvider
      */
     public function testGetAggregateSummaryGetTestCount(string $path, int $expected) : void {
-        Loop::run(function() use($path, $expected) {
-            $results = yield (new StaticAnalysisParser())->parse($path);
-            $calculator = new SummaryCalculator($results);
+        $results = (new StaticAnalysisParser())->parse($path);
+        $calculator = new SummaryCalculator($results);
 
-            $this->assertSame($expected, $calculator->getAggregateSummary()->getTotalTestCount());
-        });
+        $this->assertSame($expected, $calculator->getAggregateSummary()->getTotalTestCount());
     }
 
     public function aggregateSummaryDisabledTestCountProvider() : array {
@@ -148,31 +135,25 @@ class SummaryCalculatorTest extends TestCase {
      * @dataProvider aggregateSummaryDisabledTestCountProvider
      */
     public function testGetAggregateSummaryGetDisabledTestCount(string $path, int $expected) : void {
-        Loop::run(function() use($path, $expected) {
-            $results = yield (new StaticAnalysisParser())->parse($path);
-            $calculator = new SummaryCalculator($results);
+        $results = (new StaticAnalysisParser())->parse($path);
+        $calculator = new SummaryCalculator($results);
 
-            $this->assertSame($expected, $calculator->getAggregateSummary()->getDisabledTestCount());
-        });
+        $this->assertSame($expected, $calculator->getAggregateSummary()->getDisabledTestCount());
     }
 
     public function testGetAggregateSummarySameObject() : void {
-        Loop::run(function() {
-            $results = yield (new StaticAnalysisParser())->parse($this->implicitDefaultTestSuitePath('SingleTest'));
-            $calculator = new SummaryCalculator($results);
+        $results = (new StaticAnalysisParser())->parse($this->implicitDefaultTestSuitePath('SingleTest'));
+        $calculator = new SummaryCalculator($results);
 
-            $this->assertSame($calculator->getAggregateSummary(), $calculator->getAggregateSummary());
-        });
+        $this->assertSame($calculator->getAggregateSummary(), $calculator->getAggregateSummary());
     }
 
     public function testGetTestSuiteSummaryGetTestSuiteName() {
-        Loop::run(function() {
-            $results = yield (new StaticAnalysisParser())->parse($this->implicitDefaultTestSuitePath('SingleTest'));
-            $calculator = new SummaryCalculator($results);
+        $results = (new StaticAnalysisParser())->parse($this->implicitDefaultTestSuitePath('SingleTest'));
+        $calculator = new SummaryCalculator($results);
 
-            $testSuiteSummary = $calculator->getTestSuiteSummary(ImplicitTestSuite::class);
-            $this->assertSame(ImplicitTestSuite::class, $testSuiteSummary->getTestSuiteName());
-        });
+        $testSuiteSummary = $calculator->getTestSuiteSummary(ImplicitTestSuite::class);
+        $this->assertSame(ImplicitTestSuite::class, $testSuiteSummary->getTestSuiteName());
     }
 
     public function suiteSummaryTestCaseNamesProvider() : array {
@@ -199,13 +180,11 @@ class SummaryCalculatorTest extends TestCase {
      * @dataProvider suiteSummaryTestCaseNamesProvider
      */
     public function testGetTestSuiteSummaryGetTestCaseNames(string $path, string $testSuite, array $expected) : void {
-        Loop::run(function() use($path, $testSuite, $expected) {
-            $results = yield (new StaticAnalysisParser())->parse($path);
-            $calculator = new SummaryCalculator($results);
+        $results = (new StaticAnalysisParser())->parse($path);
+        $calculator = new SummaryCalculator($results);
 
-            $testSuiteSummary = $calculator->getTestSuiteSummary($testSuite);
-            $this->assertEqualsCanonicalizing($expected, $testSuiteSummary->getTestCaseNames());
-        });
+        $testSuiteSummary = $calculator->getTestSuiteSummary($testSuite);
+        $this->assertEqualsCanonicalizing($expected, $testSuiteSummary->getTestCaseNames());
     }
 
     public function suiteSummaryTestCaseCountProvider() : array {
@@ -222,13 +201,11 @@ class SummaryCalculatorTest extends TestCase {
      * @dataProvider suiteSummaryTestCaseCountProvider
      */
     public function testGetTestSuiteSummaryGetTestCaseCount(string $path, string $testSuite, int $expected) {
-        Loop::run(function() use($path, $testSuite, $expected) {
-            $results = yield (new StaticAnalysisParser())->parse($path);
-            $calculator = new SummaryCalculator($results);
+        $results = (new StaticAnalysisParser())->parse($path);
+        $calculator = new SummaryCalculator($results);
 
-            $testSuiteSummary = $calculator->getTestSuiteSummary($testSuite);
-            $this->assertSame($expected, $testSuiteSummary->getTestCaseCount());
-        });
+        $testSuiteSummary = $calculator->getTestSuiteSummary($testSuite);
+        $this->assertSame($expected, $testSuiteSummary->getTestCaseCount());
     }
 
     public function suiteSummaryDisabledTestCaseCountProvider() : array {
@@ -246,13 +223,11 @@ class SummaryCalculatorTest extends TestCase {
      * @dataProvider suiteSummaryDisabledTestCaseCountProvider
      */
     public function testGetTestSuiteSummaryGetDisabledTestCaseCount(string $path, string $testSuite, int $expected) {
-        Loop::run(function() use($path, $testSuite, $expected) {
-            $results = yield (new StaticAnalysisParser())->parse($path);
-            $calculator = new SummaryCalculator($results);
+        $results = (new StaticAnalysisParser())->parse($path);
+        $calculator = new SummaryCalculator($results);
 
-            $testSuiteSummary = $calculator->getTestSuiteSummary($testSuite);
-            $this->assertSame($expected, $testSuiteSummary->getDisabledTestCaseCount());
-        });
+        $testSuiteSummary = $calculator->getTestSuiteSummary($testSuite);
+        $this->assertSame($expected, $testSuiteSummary->getDisabledTestCaseCount());
     }
 
     public function suiteSummaryTestCountProvider() : array {
@@ -270,13 +245,11 @@ class SummaryCalculatorTest extends TestCase {
      * @dataProvider suiteSummaryTestCountProvider
      */
     public function testGetTestSuiteSummaryGetTestCount(string $path, string $testSuite, int $expected) : void {
-        Loop::run(function() use($path, $testSuite, $expected) {
-            $results = yield (new StaticAnalysisParser())->parse($path);
-            $calculator = new SummaryCalculator($results);
+        $results = (new StaticAnalysisParser())->parse($path);
+        $calculator = new SummaryCalculator($results);
 
-            $testSuiteSummary = $calculator->getTestSuiteSummary($testSuite);
-            $this->assertSame($expected, $testSuiteSummary->getTestCount());
-        });
+        $testSuiteSummary = $calculator->getTestSuiteSummary($testSuite);
+        $this->assertSame($expected, $testSuiteSummary->getTestCount());
     }
 
     public function suiteSummaryDisabledTestCountProvider() : array {
@@ -293,13 +266,11 @@ class SummaryCalculatorTest extends TestCase {
      * @dataProvider suiteSummaryDisabledTestCountProvider
      */
     public function testGetTestSuiteSummaryGetDisabledTestCount(string $path, string $testSuite, int $expected) : void {
-        Loop::run(function() use($path, $testSuite, $expected) {
-            $results = yield (new StaticAnalysisParser())->parse($path);
-            $calculator = new SummaryCalculator($results);
+        $results = (new StaticAnalysisParser())->parse($path);
+        $calculator = new SummaryCalculator($results);
 
-            $testSuiteSummary = $calculator->getTestSuiteSummary($testSuite);
-            $this->assertSame($expected, $testSuiteSummary->getDisabledTestCount());
-        });
+        $testSuiteSummary = $calculator->getTestSuiteSummary($testSuite);
+        $this->assertSame($expected, $testSuiteSummary->getDisabledTestCount());
     }
 
     public function caseSummaryTestSuiteNameProvider() : array {
@@ -313,26 +284,22 @@ class SummaryCalculatorTest extends TestCase {
      * @dataProvider caseSummaryTestSuiteNameProvider
      */
     public function testGetTestCaseSummaryGetTestSuiteName(string $path, string $testCase, string $expected) : void {
-        Loop::run(function() use($path, $testCase, $expected) {
-            $results = yield (new StaticAnalysisParser())->parse($path);
-            $calculator = new SummaryCalculator($results);
+        $results = (new StaticAnalysisParser())->parse($path);
+        $calculator = new SummaryCalculator($results);
 
-            $testSuiteSummary = $calculator->getTestCaseSummary($testCase);
-            $this->assertSame($expected, $testSuiteSummary->getTestSuiteName());
-        });
+        $testSuiteSummary = $calculator->getTestCaseSummary($testCase);
+        $this->assertSame($expected, $testSuiteSummary->getTestSuiteName());
     }
 
     /**
      * @dataProvider caseSummaryTestSuiteNameProvider
      */
     public function testGetTestCaseSummaryGetTestCaseName(string $path, string $expected) : void {
-        Loop::run(function() use($path, $expected) {
-            $results = yield (new StaticAnalysisParser())->parse($path);
-            $calculator = new SummaryCalculator($results);
+        $results = (new StaticAnalysisParser())->parse($path);
+        $calculator = new SummaryCalculator($results);
 
-            $testCaseSummary = $calculator->getTestCaseSummary($expected);
-            $this->assertSame($expected, $testCaseSummary->getTestCaseName());
-        });
+        $testCaseSummary = $calculator->getTestCaseSummary($expected);
+        $this->assertSame($expected, $testCaseSummary->getTestCaseName());
     }
 
     public function caseSummaryTestNamesProvider() : array {
@@ -352,13 +319,11 @@ class SummaryCalculatorTest extends TestCase {
      * @dataProvider caseSummaryTestNamesProvider
      */
     public function testGetTestCaseSummaryGetTestNames(string $path, string $testCase, array $expected) : void {
-        Loop::run(function() use($path, $testCase, $expected) {
-            $results = yield (new StaticAnalysisParser())->parse($path);
-            $calculator = new SummaryCalculator($results);
+        $results = (new StaticAnalysisParser())->parse($path);
+        $calculator = new SummaryCalculator($results);
 
-            $testCaseSummary = $calculator->getTestCaseSummary($testCase);
-            $this->assertEqualsCanonicalizing($expected, $testCaseSummary->getTestNames());
-        });
+        $testCaseSummary = $calculator->getTestCaseSummary($testCase);
+        $this->assertEqualsCanonicalizing($expected, $testCaseSummary->getTestNames());
     }
 
     public function caseSummaryTestCountProvider() : array {
@@ -374,13 +339,11 @@ class SummaryCalculatorTest extends TestCase {
      * @dataProvider caseSummaryTestCountProvider
      */
     public function testGetTestCaseSummaryGetTestCount(string $path, string $testCase, int $expected) : void {
-        Loop::run(function() use($path, $testCase, $expected) {
-            $results = yield (new StaticAnalysisParser())->parse($path);
-            $calculator = new SummaryCalculator($results);
+        $results = (new StaticAnalysisParser())->parse($path);
+        $calculator = new SummaryCalculator($results);
 
-            $testCaseSummary = $calculator->getTestCaseSummary($testCase);
-            $this->assertSame($expected, $testCaseSummary->getTestCount());
-        });
+        $testCaseSummary = $calculator->getTestCaseSummary($testCase);
+        $this->assertSame($expected, $testCaseSummary->getTestCount());
     }
 
     public function caseSummaryDisabledTestCountProvider() : array {
@@ -395,12 +358,10 @@ class SummaryCalculatorTest extends TestCase {
      * @dataProvider caseSummaryDisabledTestCountProvider
      */
     public function testGetTestCaseSummaryGetDisabledTestCount(string $path, string $testCase, int $expected) : void {
-        Loop::run(function() use($path, $testCase, $expected) {
-            $results = yield (new StaticAnalysisParser())->parse($path);
-            $calculator = new SummaryCalculator($results);
+        $results = (new StaticAnalysisParser())->parse($path);
+        $calculator = new SummaryCalculator($results);
 
-            $testCaseSummary = $calculator->getTestCaseSummary($testCase);
-            $this->assertSame($expected, $testCaseSummary->getDisabledTestCount());
-        });
+        $testCaseSummary = $calculator->getTestCaseSummary($testCase);
+        $this->assertSame($expected, $testCaseSummary->getDisabledTestCount());
     }
 }

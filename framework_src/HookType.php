@@ -2,9 +2,6 @@
 
 namespace Cspray\Labrador\AsyncUnit;
 
-use Cspray\Yape\Enum;
-use Cspray\Yape\EnumTrait;
-
 enum HookType : string {
     case BeforeAll = 'BeforeAll';
     case BeforeEach = 'BeforeEach';

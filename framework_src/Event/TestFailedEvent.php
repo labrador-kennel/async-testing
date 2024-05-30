@@ -2,9 +2,9 @@
 
 namespace Cspray\Labrador\AsyncUnit\Event;
 
-use Cspray\Labrador\AsyncEvent\StandardEvent;
 use Cspray\Labrador\AsyncUnit\Events;
 use Cspray\Labrador\AsyncUnit\TestResult;
+use Labrador\AsyncEvent\StandardEvent;
 
 final class TestFailedEvent extends StandardEvent {
 

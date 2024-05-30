@@ -2,7 +2,7 @@
 
 namespace Cspray\Labrador\AsyncUnit\Stub;
 
-use Cspray\Labrador\AsyncUnit\Configuration;
+use Cspray\Labrador\AsyncUnit\Configuration\Configuration;
 use Cspray\Labrador\AsyncUnitCli\TerminalResultPrinter;
 
 class TestConfiguration implements Configuration {

@@ -2,12 +2,11 @@
 
 namespace Cspray\Labrador\AsyncUnit;
 
-use Cspray\Labrador\AsyncEvent\EventEmitter;
-use Amp\ByteStream\OutputStream;
-use Cspray\Labrador\Plugin\Plugin;
+use Amp\ByteStream\WritableStream;
+use Labrador\AsyncEvent\EventEmitter;
 
-interface ResultPrinterPlugin extends Plugin {
+interface ResultPrinterPlugin {
 
-    public function registerEvents(EventEmitter $emitter, OutputStream $output) : void;
+    public function registerEvents(EventEmitter $emitter, WritableStream $output) : void;
 
 }

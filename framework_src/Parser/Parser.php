@@ -2,14 +2,12 @@
 
 namespace Cspray\Labrador\AsyncUnit\Parser;
 
-use Amp\Promise;
-
 interface Parser {
 
     /**
-     * @param array|string $dirs
-     * @return Promise<ParserResult>
+     * @param list<string>|string $dirs
+     * @return ParserResult
      */
-    public function parse(array|string $dirs) : Promise;
+    public function parse(array|string $dirs) : ParserResult;
 
 }

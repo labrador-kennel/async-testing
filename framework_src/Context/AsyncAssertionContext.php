@@ -2,8 +2,7 @@
 
 namespace Cspray\Labrador\AsyncUnit\Context;
 
-use Amp\Coroutine;
-use Amp\Promise;
+use Amp\Future;
 use Cspray\Labrador\AsyncUnit\Assertion\AsyncAssertArrayEquals;
 use Cspray\Labrador\AsyncUnit\Assertion\AsyncAssertCountEquals;
 use Cspray\Labrador\AsyncUnit\Assertion\AsyncAssertFloatEquals;
@@ -15,125 +14,102 @@ use Cspray\Labrador\AsyncUnit\Assertion\AsyncAssertIsNull;
 use Cspray\Labrador\AsyncUnit\Assertion\AsyncAssertIsTrue;
 use Cspray\Labrador\AsyncUnit\Assertion\AsyncAssertStringEquals;
 use Generator;
-use function Amp\call;
+use function Amp\async;
 
 final class AsyncAssertionContext {
 
     use LastAssertionCalledTrait;
     use SharedAssertionContextTrait;
 
-    private function __construct(private CustomAssertionContext $customAssertionContext) {}
+    private function __construct(private readonly CustomAssertionContext $customAssertionContext) {}
 
-    public function arrayEquals(array $expected, Promise|Generator|Coroutine $actual, string $message = null) : Promise {
-        return call(function() use($expected, $actual, $message) {
-            $isNot = $this->isNot;
-            $this->invokedAssertionContext();
+    public function arrayEquals(array $expected, Future|Generator $actual, string $message = null) : void {
+        $isNot = $this->isNot;
+        $this->invokedAssertionContext();
 
-            $results = yield (new AsyncAssertArrayEquals($expected, $actual))->assert();
+        $results = (new AsyncAssertArrayEquals($expected, $actual))->assert()->await();
 
-            $this->handleAssertionResults($results, $isNot, $message);
-        });
+        $this->handleAssertionResults($results, $isNot, $message);
     }
 
-    public function floatEquals(float $expected, Promise|Generator|Coroutine $actual, string $message = null) : Promise {
-        return call(function() use($expected, $actual, $message) {
-            $isNot = $this->isNot;
-            $this->invokedAssertionContext();
+    public function floatEquals(float $expected, Future|Generator $actual, string $message = null) : void {
+        $isNot = $this->isNot;
+        $this->invokedAssertionContext();
 
-            $results = yield (new AsyncAssertFloatEquals($expected, $actual))->assert();
+        $results = (new AsyncAssertFloatEquals($expected, $actual))->assert()->await();
 
-            $this->handleAssertionResults($results, $isNot, $message);
-        });
+        $this->handleAssertionResults($results, $isNot, $message);
     }
 
-    public function intEquals(int $expected, Promise|Generator|Coroutine $actual, string $message = null) : Promise {
-        return call(function() use($expected, $actual, $message) {
-            $isNot = $this->isNot;
-            $this->invokedAssertionContext();
+    public function intEquals(int $expected, Future|Generator $actual, string $message = null) : void {
+        $isNot = $this->isNot;
+        $this->invokedAssertionContext();
 
-            $results = yield (new AsyncAssertIntEquals($expected, $actual))->assert();
+        $results = (new AsyncAssertIntEquals($expected, $actual))->assert()->await();
 
-            $this->handleAssertionResults($results, $isNot, $message);
-        });
+        $this->handleAssertionResults($results, $isNot, $message);
     }
 
     /**
      * Compare that an $actual string resolved from a promisor is equal to $expected.
      *
      * @param string $expected
-     * @param Promise<string>|Generator<string>|Coroutine<string> $actual
+     * @param Future<string>|Generator<string> $actual
      * @param string|null $message
-     * @return Promise
      */
-    public function stringEquals(string $expected, Promise|Generator|Coroutine $actual, string $message = null) : Promise {
-        return call(function() use($expected, $actual, $message) {
-            $isNot = $this->isNot;
-            $this->invokedAssertionContext();
-            $results = yield (new AsyncAssertStringEquals($expected, $actual))->assert();
-            $this->handleAssertionResults($results, $isNot, $message);
-        });
+    public function stringEquals(string $expected, Future|Generator $actual, string $message = null) : void {
+        $isNot = $this->isNot;
+        $this->invokedAssertionContext();
+        $results = (new AsyncAssertStringEquals($expected, $actual))->assert()->await();
+        $this->handleAssertionResults($results, $isNot, $message);
     }
 
-    public function countEquals(int $expected, Promise|Generator|Coroutine $actual, string $message = null) : Promise {
-        return call(function() use($expected, $actual, $message) {
-            $isNot = $this->isNot;
-            $this->invokedAssertionContext();
-            $results = yield (new AsyncAssertCountEquals($expected, $actual))->assert();
-            $this->handleAssertionResults($results, $isNot, $message);
-        });
+    public function countEquals(int $expected, Future|Generator $actual, string $message = null) : void {
+        $isNot = $this->isNot;
+        $this->invokedAssertionContext();
+        $results = (new AsyncAssertCountEquals($expected, $actual))->assert()->await();
+        $this->handleAssertionResults($results, $isNot, $message);
     }
 
-    public function instanceOf(string $expected, Promise|Generator|Coroutine $actual, string $message = null) : Promise {
-        return call(function() use($expected, $actual, $message) {
-            $isNot = $this->isNot;
-            $this->invokedAssertionContext();
-            $results = yield (new AsyncAssertInstanceOf($expected, $actual))->assert();
-            $this->handleAssertionResults($results, $isNot, $message);
-        });
+    public function instanceOf(string $expected, Future|Generator $actual, string $message = null) : void {
+        $isNot = $this->isNot;
+        $this->invokedAssertionContext();
+        $results = (new AsyncAssertInstanceOf($expected, $actual))->assert()->await();
+        $this->handleAssertionResults($results, $isNot, $message);
     }
 
-    public function isTrue(Promise|Generator|Coroutine $actual, string $message = null) : Promise {
-        return call(function() use($actual, $message) {
-            $isNot = $this->isNot;
-            $this->invokedAssertionContext();
-            $results = yield (new AsyncAssertIsTrue($actual))->assert();
-            $this->handleAssertionResults($results, $isNot, $message);
-        });
+    public function isTrue(Future|Generator $actual, string $message = null) : void {
+        $isNot = $this->isNot;
+        $this->invokedAssertionContext();
+        $results = (new AsyncAssertIsTrue($actual))->assert()->await();
+        $this->handleAssertionResults($results, $isNot, $message);
     }
 
-    public function isFalse(Promise|Generator|Coroutine $actual, string $message = null) : Promise {
-        return call(function() use($actual, $message) {
-            $isNot = $this->isNot;
-            $this->invokedAssertionContext();
-            $results = yield (new AsyncAssertIsFalse($actual))->assert();
-            $this->handleAssertionResults($results, $isNot, $message);
-        });
+    public function isFalse(Future|Generator $actual, string $message = null) : void {
+        $isNot = $this->isNot;
+        $this->invokedAssertionContext();
+        $results = (new AsyncAssertIsFalse($actual))->assert()->await();
+        $this->handleAssertionResults($results, $isNot, $message);
     }
 
-    public function isNull(Promise|Generator|Coroutine $actual, string $message = null) : Promise {
-        return call(function () use($actual, $message) {
-            $isNot = $this->isNot;
-            $this->invokedAssertionContext();
-            $results = yield (new AsyncAssertIsNull($actual))->assert();
-            $this->handleAssertionResults($results, $isNot, $message);
-        });
+    public function isNull(Future|Generator $actual, string $message = null) : void {
+        $isNot = $this->isNot;
+        $this->invokedAssertionContext();
+        $results = (new AsyncAssertIsNull($actual))->assert()->await();
+        $this->handleAssertionResults($results, $isNot, $message);
     }
 
-    public function isEmpty(Promise|Generator|Coroutine $actual, string $message = null) : Promise {
-        return call(function() use($actual, $message) {
-            $isNot = $this->isNot;
-            $this->invokedAssertionContext();
-            $results = yield (new AsyncAssertIsEmpty($actual))->assert();
-            $this->handleAssertionResults($results, $isNot, $message);
-        });
+    public function isEmpty(Future|Generator $actual, string $message = null) : void {
+        $isNot = $this->isNot;
+        $this->invokedAssertionContext();
+        $results = (new AsyncAssertIsEmpty($actual))->assert()->await();
+        $this->handleAssertionResults($results, $isNot, $message);
     }
 
-    public function __call(string $methodName, array $args) : Promise {
-        return call(function() use($methodName, $args) {
-            $isNot = $this->isNot;
-            $this->invokedAssertionContext();
-            $results = yield $this->customAssertionContext->createAsyncAssertion($methodName, ...$args)->assert();
-            $this->handleAssertionResults($results, $isNot, null);
-        });
+    public function __call(string $methodName, array $args) : void {
+        $isNot = $this->isNot;
+        $this->invokedAssertionContext();
+        $results = $this->customAssertionContext->createAsyncAssertion($methodName, ...$args)->assert()->await();
+        $this->handleAssertionResults($results, $isNot, null);
     }
 }

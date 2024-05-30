@@ -2,6 +2,7 @@
 
 namespace Acme\DemoSuites\ImplicitDefaultTestSuite\TestDisabledHookNotInvoked;
 
+use Amp\Future;
 use Amp\Success;
 use Cspray\Labrador\AsyncUnit\Attribute\AfterEach;
 use Cspray\Labrador\AsyncUnit\Attribute\BeforeEach;
@@ -21,7 +22,7 @@ class MyTestCase extends TestCase {
     #[Test]
     public function enabledTest() {
         $this->state[] = 'enabled';
-        yield $this->asyncAssert()->arrayEquals(['before', 'enabled'], new Success($this->state));
+        $this->asyncAssert()->arrayEquals(['before', 'enabled'], Future::complete($this->state));
     }
 
     #[Test]

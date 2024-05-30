@@ -2,7 +2,7 @@
 
 namespace Cspray\Labrador\AsyncUnit;
 
-use Amp\Promise;
+use Amp\Future;
 
 /**
  * A type that represents an assertion in a #[Test] that is expected to be asynchronous in nature.
@@ -25,8 +25,8 @@ interface AsyncAssertion {
      * truly represent the Assertion cannot be processed because of something that was not, or should not, be accounted
      * for.
      *
-     * @return Promise<AssertionResult>
+     * @return Future<AssertionResult>
      */
-    public function assert() : Promise;
+    public function assert() : Future;
 
 }

@@ -2,8 +2,8 @@
 
 namespace Acme\DemoSuites\ImplicitDefaultTestSuite\SingleMockTest;
 
-use Cspray\Labrador\Application;
 use Cspray\Labrador\AsyncUnit\Attribute\Test;
+use Cspray\Labrador\AsyncUnit\Configuration\Configuration;
 use Cspray\Labrador\AsyncUnit\TestCase;
 
 class MyTestCase extends TestCase {
@@ -12,7 +12,7 @@ class MyTestCase extends TestCase {
 
     #[Test]
     public function checkCreatingMockObject() {
-        $this->createdMock = $this->mocks()->createMock(Application::class);
+        $this->createdMock = $this->mocks()->createMock(Configuration::class);
         $this->assert()->not()->isNull($this->createdMock);
     }
 

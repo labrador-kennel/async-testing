@@ -3,6 +3,7 @@
 namespace Cspray\Labrador\AsyncUnit\Assertion;
 
 use Amp\Coroutine;
+use Amp\Future;
 use Amp\Promise;
 use Cspray\Labrador\AsyncUnit\Assertion;
 use Cspray\Labrador\AsyncUnit\AsyncAssertion;
@@ -10,7 +11,7 @@ use Generator;
 
 final class AsyncAssertArrayEquals extends AbstractAsyncAssertion implements AsyncAssertion {
 
-    public function __construct(private array $expected, Promise|Generator|Coroutine $actual) {
+    public function __construct(private array $expected, Future|Generator $actual) {
         parent::__construct($actual);
     }
 

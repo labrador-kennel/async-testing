@@ -3,15 +3,14 @@
 
 namespace Cspray\Labrador\AsyncUnit\Assertion;
 
-use Amp\Coroutine;
-use Amp\Promise;
+use Amp\Future;
 use Cspray\Labrador\AsyncUnit\Assertion\AssertionMessage\BinaryOperandSummary;
 use Cspray\Labrador\AsyncUnit\AsyncAssertion;
 use Generator;
 
 class AsyncAssertIntEqualsTest extends AbstractAsyncAssertionTestCase {
 
-    protected function getAssertion($expected, Promise|Generator|Coroutine $actual) : AsyncAssertion {
+    protected function getAssertion($expected, Future|Generator $actual) : AsyncAssertion {
         return new AsyncAssertIntEquals($expected, $actual);
     }
 

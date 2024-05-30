@@ -4,31 +4,36 @@ namespace Cspray\Labrador\AsyncUnitCli\Command;
 
 
 use Amp\ByteStream\OutputBuffer;
+use Amp\ByteStream\WritableBuffer;
 use Amp\File\Driver as FileDriver;
+use Amp\File\Filesystem;
+use Amp\File\FilesystemDriver;
 use Cspray\Labrador\AsyncUnit\JsonConfigurationFactory;
-use Cspray\Labrador\AsyncUnit\SupportedMockBridgeFactory;
+use Cspray\Labrador\AsyncUnit\NoConstructorMockBridgeFactory;
 use Cspray\Labrador\AsyncUnitCli\AsyncUnitConsoleApplication;
 use Cspray\Labrador\AsyncUnitCli\TerminalResultPrinter;
-use Cspray\Labrador\EnvironmentType;
-use Cspray\Labrador\StandardEnvironment;
+use Labrador\AsyncEvent\AmpEventEmitter;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;
+use function Amp\File\filesystem;
 
 abstract class BaseCommandTest extends TestCase {
 
-    protected FileDriver|MockObject $filesystem;
+    protected FilesystemDriver|MockObject|null $driver;
 
-    protected OutputBuffer $testResultBuffer;
+    protected WritableBuffer $testResultBuffer;
 
-    protected function createApplication(string $configPath, FileDriver $mockFileDriver = null) : AsyncUnitConsoleApplication {
-        $this->filesystem = $mockFileDriver ?? $this->createMock(FileDriver::class);
+    protected function createApplication(string $configPath, FilesystemDriver $driver = null) : AsyncUnitConsoleApplication {
+        if ($driver === null) {
+            $this->driver = $this->createMock(FilesystemDriver::class);
+        }
         return new AsyncUnitConsoleApplication(
-            new StandardEnvironment(EnvironmentType::Test()),
             new NullLogger(),
-            $this->filesystem,
+            new AmpEventEmitter(),
+            filesystem($driver ?? $this->driver),
             new JsonConfigurationFactory(),
-            $this->testResultBuffer = new OutputBuffer(),
+            $this->testResultBuffer = new WritableBuffer(),
             $configPath
         );
     }

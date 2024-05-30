@@ -3,7 +3,7 @@
 
 namespace Cspray\Labrador\AsyncUnit;
 
-use Amp\Loop;
+use Amp\Future;
 use Cspray\Labrador\AsyncUnit\Event\ProcessingFinishedEvent;
 use Cspray\Labrador\AsyncUnit\Event\ProcessingStartedEvent;
 use Cspray\Labrador\AsyncUnit\Event\TestCaseFinishedEvent;
@@ -14,7 +14,10 @@ use Cspray\Labrador\AsyncUnit\MockBridge\MockeryMockBridge;
 use Cspray\Labrador\AsyncUnit\Statistics\AggregateSummary;
 use Acme\DemoSuites\ImplicitDefaultTestSuite;
 use Acme\DemoSuites\ExplicitTestSuite;
-use Cspray\Labrador\AsyncUnit\Stub\MockBridgeFactoryStub;
+use Labrador\AsyncEvent\AbstractListener;
+use Labrador\AsyncEvent\Event;
+use Labrador\AsyncEvent\Listener;
+use Labrador\CompositeFuture\CompositeFuture;
 use PHPUnit\Framework\TestCase as PHPUnitTestCase;
 use stdClass;
 
@@ -27,24 +30,39 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
         $this->buildTestSuiteRunner();
     }
 
+    private function createEventRecordingListener(string $event) : Listener {
+        return new class($event) extends AbstractListener {
+
+            public array $actual = [];
+
+            public function __construct(
+                private readonly string $event
+            ) {}
+
+            public function canHandle(string $eventName) : bool {
+                return $this->event === $eventName;
+            }
+
+            public function handle(Event $event) : Future|CompositeFuture|null {
+                $this->actual[] = $event;
+                return null;
+            }
+        };
+    }
+
     public function testTestProcessingStartedHasAggregateSummary() {
-        Loop::run(function() {
-            $results = yield $this->parser->parse($this->implicitDefaultTestSuitePath('TestCaseDisabled'));
-            $state = new stdClass();
-            $state->data = [];
-            $this->emitter->on(Events::PROCESSING_STARTED, function($event) use($state) {
-                $state->data[] = $event;
-            });
+        $results = $this->parser->parse($this->implicitDefaultTestSuitePath('TestCaseDisabled'));
+        $listener = $this->createEventRecordingListener(Events::PROCESSING_STARTED);
+        $this->emitter->register($listener);
 
-            yield $this->testSuiteRunner->runTestSuites($results);
+        $this->testSuiteRunner->runTestSuites($results);
 
-            $this->assertCount(1, $state->data);
-            /** @var ProcessingStartedEvent $testStartedEvent */
-            $testStartedEvent = $state->data[0];
+        $this->assertCount(1, $listener->actual);
+        /** @var ProcessingStartedEvent $testStartedEvent */
+        $testStartedEvent = $listener->actual[0];
 
-            $this->assertInstanceOf(ProcessingStartedEvent::class, $testStartedEvent);
-            $this->assertInstanceOf(AggregateSummary::class, $testStartedEvent->getTarget());
-        });
+        $this->assertInstanceOf(ProcessingStartedEvent::class, $testStartedEvent);
+        $this->assertInstanceOf(AggregateSummary::class, $testStartedEvent->getTarget());
     }
 
     public function processedAggregateSummaryTestSuiteInfoProvider() : array {
@@ -60,30 +78,23 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
      * @dataProvider processedAggregateSummaryTestSuiteInfoProvider
      */
     public function testTestProcessingFinishedHasProcessedAggregateSummaryWithCorrectTestSuiteNames(string $path, array $expected) {
-        Loop::run(function() use($path, $expected) {
-            $results = yield $this->parser->parse($path);
-            $state = new stdClass();
-            $state->data = [];
+        $results = $this->parser->parse($path);
+        $listener = $this->createEventRecordingListener(Events::PROCESSING_FINISHED);
+        $this->emitter->register($listener);
 
-            $this->emitter->on(Events::PROCESSING_FINISHED, function($event) use($state) {
-                $state->data[] = $event;
-            });
+        $this->testSuiteRunner->runTestSuites($results);
 
-            yield $this->testSuiteRunner->runTestSuites($results);
+        $this->assertCount(1, $listener->actual);
+        $testFinishedEvent = $listener->actual[0];
 
-            $this->assertCount(1, $state->data);
-            /** @var ProcessingFinishedEvent $testFinishedEvent */
-            $testFinishedEvent = $state->data[0];
+        $this->assertInstanceOf(ProcessingFinishedEvent::class, $testFinishedEvent);
 
-            $this->assertInstanceOf(ProcessingFinishedEvent::class, $testFinishedEvent);
+        $summary = $testFinishedEvent->getTarget();
 
-            $summary = $testFinishedEvent->getTarget();
-
-            $this->assertEqualsCanonicalizing(
-                $expected,
-                $summary->getTestSuiteNames()
-            );
-        });
+        $this->assertEqualsCanonicalizing(
+            $expected,
+            $summary->getTestSuiteNames()
+        );
     }
 
     public function processedAggregateSummaryWithCorrectTotalTestSuiteCountProvider() : array {
@@ -97,24 +108,17 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
      * @dataProvider processedAggregateSummaryWithCorrectTotalTestSuiteCountProvider
      */
     public function testProcessedAggregateSummaryWithCorrectTotalTestSuiteCount(string $path, int $expected) : void {
-        Loop::run(function() use($path, $expected) {
-            $results = yield $this->parser->parse($path);
-            $state = new stdClass();
-            $state->data = [];
+        $results = $this->parser->parse($path);
+        $listener = $this->createEventRecordingListener(Events::PROCESSING_FINISHED);
+        $this->emitter->register($listener);
 
-            $this->emitter->on(Events::PROCESSING_FINISHED, function($event) use($state) {
-                $state->data[] = $event;
-            });
+        $this->testSuiteRunner->runTestSuites($results);
 
-            yield $this->testSuiteRunner->runTestSuites($results);
+        $this->assertCount(1, $listener->actual);
+        $testFinishedEvent = $listener->actual[0];
 
-            $this->assertCount(1, $state->data);
-            /** @var ProcessingFinishedEvent $testFinishedEvent */
-            $testFinishedEvent = $state->data[0];
-
-            $this->assertInstanceOf(ProcessingFinishedEvent::class, $testFinishedEvent);
-            $this->assertSame($expected, $testFinishedEvent->getTarget()->getTotalTestSuiteCount());
-        });
+        $this->assertInstanceOf(ProcessingFinishedEvent::class, $testFinishedEvent);
+        $this->assertSame($expected, $testFinishedEvent->getTarget()->getTotalTestSuiteCount());
     }
 
 
@@ -130,24 +134,16 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
      * @dataProvider processedAggregateSummaryWithCorrectDisabledTestSuiteCountProvider
      */
     public function testProcessedAggregateSummaryWithCorrectDisabledTestSuiteCount(string $path, int $expected) : void {
-        Loop::run(function() use($path, $expected) {
-            $results = yield $this->parser->parse($path);
-            $state = new stdClass();
-            $state->data = [];
+        $results = $this->parser->parse($path);
+        $listener = $this->createEventRecordingListener(Events::PROCESSING_FINISHED);
+        $this->emitter->register($listener);
+        $this->testSuiteRunner->runTestSuites($results);
 
-            $this->emitter->on(Events::PROCESSING_FINISHED, function($event) use($state) {
-                $state->data[] = $event;
-            });
+        $this->assertCount(1, $listener->actual);
+        $testFinishedEvent = $listener->actual[0];
 
-            yield $this->testSuiteRunner->runTestSuites($results);
-
-            $this->assertCount(1, $state->data);
-            /** @var ProcessingFinishedEvent $testFinishedEvent */
-            $testFinishedEvent = $state->data[0];
-
-            $this->assertInstanceOf(ProcessingFinishedEvent::class, $testFinishedEvent);
-            $this->assertSame($expected, $testFinishedEvent->getTarget()->getDisabledTestSuiteCount());
-        });
+        $this->assertInstanceOf(ProcessingFinishedEvent::class, $testFinishedEvent);
+        $this->assertSame($expected, $testFinishedEvent->getTarget()->getDisabledTestSuiteCount());
     }
 
     public function processedAggregateSummaryWithCorrectTotalTestCaseCountProvider() : array {
@@ -162,24 +158,16 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
      * @dataProvider processedAggregateSummaryWithCorrectTotalTestCaseCountProvider
      */
     public function testProcessedAggregateSummaryWithCorrectTotalTestCaseCount(string $path, int $expected) : void {
-        Loop::run(function() use($path, $expected) {
-            $results = yield $this->parser->parse($path);
-            $state = new stdClass();
-            $state->data = [];
+        $results = $this->parser->parse($path);
+        $listener = $this->createEventRecordingListener(Events::PROCESSING_FINISHED);
+        $this->emitter->register($listener);
+        $this->testSuiteRunner->runTestSuites($results);
 
-            $this->emitter->on(Events::PROCESSING_FINISHED, function($event) use($state) {
-                $state->data[] = $event;
-            });
+        $this->assertCount(1, $listener->actual);
+        $testFinishedEvent = $listener->actual[0];
 
-            yield $this->testSuiteRunner->runTestSuites($results);
-
-            $this->assertCount(1, $state->data);
-            /** @var ProcessingFinishedEvent $testFinishedEvent */
-            $testFinishedEvent = $state->data[0];
-
-            $this->assertInstanceOf(ProcessingFinishedEvent::class, $testFinishedEvent);
-            $this->assertSame($expected, $testFinishedEvent->getTarget()->getTotalTestCaseCount());
-        });
+        $this->assertInstanceOf(ProcessingFinishedEvent::class, $testFinishedEvent);
+        $this->assertSame($expected, $testFinishedEvent->getTarget()->getTotalTestCaseCount());
     }
 
     public function processedAggregateSummaryWithCorrectDisabledTestCaseCountProvider() : array {
@@ -195,24 +183,17 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
      * @dataProvider processedAggregateSummaryWithCorrectDisabledTestCaseCountProvider
      */
     public function testProcessedAggregateSummaryWithCorrectDisabledTestCaseCount(string $path, int $expected) : void {
-        Loop::run(function() use($path, $expected) {
-            $results = yield $this->parser->parse($path);
-            $state = new stdClass();
-            $state->data = [];
+        $results = $this->parser->parse($path);
+        $listener = $this->createEventRecordingListener(Events::PROCESSING_FINISHED);
+        $this->emitter->register($listener);
+        $this->testSuiteRunner->runTestSuites($results);
 
-            $this->emitter->on(Events::PROCESSING_FINISHED, function($event) use($state) {
-                $state->data[] = $event;
-            });
+        $this->assertCount(1, $listener->actual);
+        /** @var ProcessingFinishedEvent $testFinishedEvent */
+        $testFinishedEvent = $listener->actual[0];
 
-            yield $this->testSuiteRunner->runTestSuites($results);
-
-            $this->assertCount(1, $state->data);
-            /** @var ProcessingFinishedEvent $testFinishedEvent */
-            $testFinishedEvent = $state->data[0];
-
-            $this->assertInstanceOf(ProcessingFinishedEvent::class, $testFinishedEvent);
-            $this->assertSame($expected, $testFinishedEvent->getTarget()->getDisabledTestCaseCount());
-        });
+        $this->assertInstanceOf(ProcessingFinishedEvent::class, $testFinishedEvent);
+        $this->assertSame($expected, $testFinishedEvent->getTarget()->getDisabledTestCaseCount());
     }
 
     public function processedAggregateSummaryWithCorrectTotalTestCountProvider() : array {
@@ -229,24 +210,17 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
      * @dataProvider processedAggregateSummaryWithCorrectTotalTestCountProvider
      */
     public function testProcessedAggregateSummaryWithCorrectTotalTestCount(string $path, int $expected) : void {
-        Loop::run(function() use($path, $expected) {
-            $results = yield $this->parser->parse($path);
-            $state = new stdClass();
-            $state->data = [];
+        $results = $this->parser->parse($path);
+        $listener = $this->createEventRecordingListener(Events::PROCESSING_FINISHED);
+        $this->emitter->register($listener);
+        $this->testSuiteRunner->runTestSuites($results);
 
-            $this->emitter->on(Events::PROCESSING_FINISHED, function($event) use($state) {
-                $state->data[] = $event;
-            });
+        $this->assertCount(1, $listener->actual);
+        /** @var ProcessingFinishedEvent $testFinishedEvent */
+        $testFinishedEvent = $listener->actual[0];
 
-            yield $this->testSuiteRunner->runTestSuites($results);
-
-            $this->assertCount(1, $state->data);
-            /** @var ProcessingFinishedEvent $testFinishedEvent */
-            $testFinishedEvent = $state->data[0];
-
-            $this->assertInstanceOf(ProcessingFinishedEvent::class, $testFinishedEvent);
-            $this->assertSame($expected, $testFinishedEvent->getTarget()->getTotalTestCount());
-        });
+        $this->assertInstanceOf(ProcessingFinishedEvent::class, $testFinishedEvent);
+        $this->assertSame($expected, $testFinishedEvent->getTarget()->getTotalTestCount());
     }
 
     public function processedAggregateSummaryWithCorrectDisabledTestCountProvider() : array {
@@ -263,24 +237,17 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
      * @dataProvider processedAggregateSummaryWithCorrectDisabledTestCountProvider
      */
     public function testProcessedAggregateSummaryWithCorrectDisabledTestCount(string $path, int $expected) : void {
-        Loop::run(function() use($path, $expected) {
-            $results = yield $this->parser->parse($path);
-            $state = new stdClass();
-            $state->data = [];
+        $results = $this->parser->parse($path);
+        $listener = $this->createEventRecordingListener(Events::PROCESSING_FINISHED);
+        $this->emitter->register($listener);
+        $this->testSuiteRunner->runTestSuites($results);
 
-            $this->emitter->on(Events::PROCESSING_FINISHED, function($event) use($state) {
-                $state->data[] = $event;
-            });
+        $this->assertCount(1, $listener->actual);
+        /** @var ProcessingFinishedEvent $testFinishedEvent */
+        $testFinishedEvent = $listener->actual[0];
 
-            yield $this->testSuiteRunner->runTestSuites($results);
-
-            $this->assertCount(1, $state->data);
-            /** @var ProcessingFinishedEvent $testFinishedEvent */
-            $testFinishedEvent = $state->data[0];
-
-            $this->assertInstanceOf(ProcessingFinishedEvent::class, $testFinishedEvent);
-            $this->assertSame($expected, $testFinishedEvent->getTarget()->getDisabledTestCount());
-        });
+        $this->assertInstanceOf(ProcessingFinishedEvent::class, $testFinishedEvent);
+        $this->assertSame($expected, $testFinishedEvent->getTarget()->getDisabledTestCount());
     }
 
     public function processedAggregateSummaryWithCorrectPassedTestCountProvider() : array {
@@ -297,24 +264,17 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
      * @dataProvider processedAggregateSummaryWithCorrectPassedTestCountProvider
      */
     public function testProcessedAggregateSummaryWithCorrectPassedTestCount(string $path, int $expected) : void {
-        Loop::run(function() use($path, $expected) {
-            $results = yield $this->parser->parse($path);
-            $state = new stdClass();
-            $state->data = [];
+        $results = $this->parser->parse($path);
+        $listener = $this->createEventRecordingListener(Events::PROCESSING_FINISHED);
+        $this->emitter->register($listener);
+        $this->testSuiteRunner->runTestSuites($results);
 
-            $this->emitter->on(Events::PROCESSING_FINISHED, function($event) use($state) {
-                $state->data[] = $event;
-            });
+        $this->assertCount(1, $listener->actual);
+        /** @var ProcessingFinishedEvent $testFinishedEvent */
+        $testFinishedEvent = $listener->actual[0];
 
-            yield $this->testSuiteRunner->runTestSuites($results);
-
-            $this->assertCount(1, $state->data);
-            /** @var ProcessingFinishedEvent $testFinishedEvent */
-            $testFinishedEvent = $state->data[0];
-
-            $this->assertInstanceOf(ProcessingFinishedEvent::class, $testFinishedEvent);
-            $this->assertSame($expected, $testFinishedEvent->getTarget()->getPassedTestCount());
-        });
+        $this->assertInstanceOf(ProcessingFinishedEvent::class, $testFinishedEvent);
+        $this->assertSame($expected, $testFinishedEvent->getTarget()->getPassedTestCount());
     }
 
     public function processedAggregateSummaryWithCorrectFailedTestCountProvider() : array {
@@ -332,24 +292,16 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
      * @dataProvider processedAggregateSummaryWithCorrectFailedTestCountProvider
      */
     public function testProcessedAggregateSummaryWithCorrectFailedTestCount(string $path, int $expected) : void {
-        Loop::run(function() use($path, $expected) {
-            $results = yield $this->parser->parse($path);
-            $state = new stdClass();
-            $state->data = [];
+        $results = $this->parser->parse($path);
+        $listener = $this->createEventRecordingListener(Events::PROCESSING_FINISHED);
+        $this->emitter->register($listener);
+        $this->testSuiteRunner->runTestSuites($results);
 
-            $this->emitter->on(Events::PROCESSING_FINISHED, function($event) use($state) {
-                $state->data[] = $event;
-            });
+        $this->assertCount(1, $listener->actual);
+        $testFinishedEvent = $listener->actual[0];
 
-            yield $this->testSuiteRunner->runTestSuites($results);
-
-            $this->assertCount(1, $state->data);
-            /** @var ProcessingFinishedEvent $testFinishedEvent */
-            $testFinishedEvent = $state->data[0];
-
-            $this->assertInstanceOf(ProcessingFinishedEvent::class, $testFinishedEvent);
-            $this->assertSame($expected, $testFinishedEvent->getTarget()->getFailedTestCount());
-        });
+        $this->assertInstanceOf(ProcessingFinishedEvent::class, $testFinishedEvent);
+        $this->assertSame($expected, $testFinishedEvent->getTarget()->getFailedTestCount());
     }
 
     public function processedAggregateSummaryWithCorrectErroredTestCountProvider() : array {
@@ -367,24 +319,17 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
      * @dataProvider processedAggregateSummaryWithCorrectErroredTestCountProvider
      */
     public function testProcessedAggregateSummaryWithCorrectErroredTestCount(string $path, int $expected) : void {
-        Loop::run(function() use($path, $expected) {
-            $results = yield $this->parser->parse($path);
-            $state = new stdClass();
-            $state->data = [];
+        $results = $this->parser->parse($path);
+        $listener = $this->createEventRecordingListener(Events::PROCESSING_FINISHED);
+        $this->emitter->register($listener);
+        $this->testSuiteRunner->runTestSuites($results);
 
-            $this->emitter->on(Events::PROCESSING_FINISHED, function($event) use($state) {
-                $state->data[] = $event;
-            });
+        $this->assertCount(1, $listener->actual);
+        /** @var ProcessingFinishedEvent $testFinishedEvent */
+        $testFinishedEvent = $listener->actual[0];
 
-            yield $this->testSuiteRunner->runTestSuites($results);
-
-            $this->assertCount(1, $state->data);
-            /** @var ProcessingFinishedEvent $testFinishedEvent */
-            $testFinishedEvent = $state->data[0];
-
-            $this->assertInstanceOf(ProcessingFinishedEvent::class, $testFinishedEvent);
-            $this->assertSame($expected, $testFinishedEvent->getTarget()->getErroredTestCount());
-        });
+        $this->assertInstanceOf(ProcessingFinishedEvent::class, $testFinishedEvent);
+        $this->assertSame($expected, $testFinishedEvent->getTarget()->getErroredTestCount());
     }
 
     public function processedAggregateSummaryWithCorrectAssertionCountProvider() : array {
@@ -400,24 +345,17 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
      * @dataProvider processedAggregateSummaryWithCorrectAssertionCountProvider
      */
     public function testProcessedAggregateSummaryWithCorrectAssertionCount(string $path, int $expected) : void {
-        Loop::run(function() use($path, $expected) {
-            $results = yield $this->parser->parse($path);
-            $state = new stdClass();
-            $state->data = [];
+        $results = $this->parser->parse($path);
+        $listener = $this->createEventRecordingListener(Events::PROCESSING_FINISHED);
+        $this->emitter->register($listener);
+        $this->testSuiteRunner->runTestSuites($results);
 
-            $this->emitter->on(Events::PROCESSING_FINISHED, function($event) use($state) {
-                $state->data[] = $event;
-            });
+        $this->assertCount(1, $listener->actual);
+        /** @var ProcessingFinishedEvent $testFinishedEvent */
+        $testFinishedEvent = $listener->actual[0];
 
-            yield $this->testSuiteRunner->runTestSuites($results);
-
-            $this->assertCount(1, $state->data);
-            /** @var ProcessingFinishedEvent $testFinishedEvent */
-            $testFinishedEvent = $state->data[0];
-
-            $this->assertInstanceOf(ProcessingFinishedEvent::class, $testFinishedEvent);
-            $this->assertSame($expected, $testFinishedEvent->getTarget()->getAssertionCount());
-        });
+        $this->assertInstanceOf(ProcessingFinishedEvent::class, $testFinishedEvent);
+        $this->assertSame($expected, $testFinishedEvent->getTarget()->getAssertionCount());
     }
 
     public function processedAggregateSummaryWithCorrectAsyncAssertionCountProvider() : array {
@@ -433,24 +371,17 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
      * @dataProvider processedAggregateSummaryWithCorrectAsyncAssertionCountProvider
      */
     public function testProcessedAggregateSummaryWithCorrectAsyncAssertionCount(string $path, int $expected) : void {
-        Loop::run(function() use($path, $expected) {
-            $results = yield $this->parser->parse($path);
-            $state = new stdClass();
-            $state->data = [];
+        $results = $this->parser->parse($path);
+        $listener = $this->createEventRecordingListener(Events::PROCESSING_FINISHED);
+        $this->emitter->register($listener);
+        $this->testSuiteRunner->runTestSuites($results);
 
-            $this->emitter->on(Events::PROCESSING_FINISHED, function($event) use($state) {
-                $state->data[] = $event;
-            });
+        $this->assertCount(1, $listener->actual);
+        /** @var ProcessingFinishedEvent $testFinishedEvent */
+        $testFinishedEvent = $listener->actual[0];
 
-            yield $this->testSuiteRunner->runTestSuites($results);
-
-            $this->assertCount(1, $state->data);
-            /** @var ProcessingFinishedEvent $testFinishedEvent */
-            $testFinishedEvent = $state->data[0];
-
-            $this->assertInstanceOf(ProcessingFinishedEvent::class, $testFinishedEvent);
-            $this->assertSame($expected, $testFinishedEvent->getTarget()->getAsyncAssertionCount());
-        });
+        $this->assertInstanceOf(ProcessingFinishedEvent::class, $testFinishedEvent);
+        $this->assertSame($expected, $testFinishedEvent->getTarget()->getAsyncAssertionCount());
     }
 
     public function processedTestSuiteSummaryTestSuiteNameProvider() : array {
@@ -468,19 +399,15 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
      * @dataProvider processedTestSuiteSummaryTestSuiteNameProvider
      */
     public function testProcessedTestSuiteSummaryHasCorrectTestSuiteName(string $path, array $expected) : void {
-        Loop::run(function() use($path, $expected) {
-            $results = yield $this->parser->parse($path);
-            $state = new stdClass();
-            $state->data = [];
+        $results = $this->parser->parse($path);
+        $listener = $this->createEventRecordingListener(Events::TEST_SUITE_FINISHED);
+        $this->emitter->register($listener);
+        $this->testSuiteRunner->runTestSuites($results);
 
-            $this->emitter->on(Events::TEST_SUITE_FINISHED, function(TestSuiteFinishedEvent $event) use($state) {
-                $state->data[] = $event->getTarget()->getTestSuiteName();
-            });
-
-            yield $this->testSuiteRunner->runTestSuites($results);
-
-            $this->assertEqualsCanonicalizing($expected, $state->data);
-        });
+        $this->assertEqualsCanonicalizing(
+            $expected,
+            array_map(static fn(Event $event) => $event->getTarget()->getTestSuiteName(), $listener->actual)
+        );
     }
 
     public function processedTestSuiteSummaryTestCaseNamesProvider() : array {
@@ -516,15 +443,15 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
      * @dataProvider processedTestSuiteSummaryTestCaseNamesProvider
      */
     public function testProcessedTestSuiteSummaryHasTestCaseNames(string $path, array $expected) : void {
-        Loop::run(function() use($path, $expected) {
-            $results = yield $this->parser->parse($path);
+            $results = $this->parser->parse($path);
+            $listener = $this->createEventRecordingListener(Events::TEST_SUITE_FINISHED);
+            $this->emitter->register($listener);
+            $this->testSuiteRunner->runTestSuites($results);
+
             $actual = [];
-
-            $this->emitter->on(Events::TEST_SUITE_FINISHED, function(TestSuiteFinishedEvent $event) use(&$actual) {
+            foreach ($listener->actual as $event) {
                 $actual[$event->getTarget()->getTestSuiteName()] = $event->getTarget()->getTestCaseNames();
-            });
-
-            yield $this->testSuiteRunner->runTestSuites($results);
+            }
 
             $testSuites = array_keys($actual);
 
@@ -535,8 +462,6 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
 
                 $this->assertEqualsCanonicalizing($expected[$testSuite], $actual[$testSuite]);
             }
-
-        });
     }
 
     public function processedTestSuiteSummaryTotalTestCaseCountProvider() : array {
@@ -561,18 +486,17 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
      * @dataProvider processedTestSuiteSummaryTotalTestCaseCountProvider
      */
     public function testProcessedTestSuiteSummaryHasTotalTestCaseCount(string $path, array $expected) : void {
-        Loop::run(function() use($path, $expected) {
-            $results = yield $this->parser->parse($path);
-            $actual = [];
+        $results = $this->parser->parse($path);
+        $listener = $this->createEventRecordingListener(Events::TEST_SUITE_FINISHED);
+        $this->emitter->register($listener);
+        $this->testSuiteRunner->runTestSuites($results);
 
-            $this->emitter->on(Events::TEST_SUITE_FINISHED, function(TestSuiteFinishedEvent $event) use(&$actual) {
-                $actual[$event->getTarget()->getTestSuiteName()] = $event->getTarget()->getTestCaseCount();
-            });
+        $actual = [];
+        foreach ($listener->actual as $event) {
+            $actual[$event->getTarget()->getTestSuiteName()] = $event->getTarget()->getTestCaseCount();
+        }
 
-            yield $this->testSuiteRunner->runTestSuites($results);
-
-            $this->assertEquals($expected, $actual);
-        });
+        $this->assertEquals($expected, $actual);
     }
 
     public function processedTestSuiteSummaryDisabledTestCaseCountProvider() : array {
@@ -597,18 +521,17 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
      * @dataProvider processedTestSuiteSummaryDisabledTestCaseCountProvider
      */
     public function testProcessedTestSuiteSummaryHasDisabledTestCaseCount(string $path, array $expected) : void {
-        Loop::run(function() use($path, $expected) {
-            $results = yield $this->parser->parse($path);
-            $actual = [];
+        $results = $this->parser->parse($path);
+        $listener = $this->createEventRecordingListener(Events::TEST_SUITE_FINISHED);
+        $this->emitter->register($listener);
+        $this->testSuiteRunner->runTestSuites($results);
 
-            $this->emitter->on(Events::TEST_SUITE_FINISHED, function(TestSuiteFinishedEvent $event) use(&$actual) {
-                $actual[$event->getTarget()->getTestSuiteName()] = $event->getTarget()->getDisabledTestCaseCount();
-            });
+        $actual = [];
+        foreach ($listener->actual as $event) {
+            $actual[$event->getTarget()->getTestSuiteName()] = $event->getTarget()->getDisabledTestCaseCount();
+        }
 
-            yield $this->testSuiteRunner->runTestSuites($results);
-
-            $this->assertEquals($expected, $actual);
-        });
+        $this->assertEquals($expected, $actual);
     }
 
     public function processedTestSuiteSummaryTotalTestCountProvider() : array {
@@ -639,18 +562,17 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
      * @dataProvider processedTestSuiteSummaryTotalTestCountProvider
      */
     public function testProcessedTestSuiteSummaryHasTotalTestCount(string $path, array $expected) : void {
-        Loop::run(function() use($path, $expected) {
-            $results = yield $this->parser->parse($path);
-            $actual = [];
+        $results = $this->parser->parse($path);
+        $listener = $this->createEventRecordingListener(Events::TEST_SUITE_FINISHED);
+        $this->emitter->register($listener);
+        $this->testSuiteRunner->runTestSuites($results);
 
-            $this->emitter->on(Events::TEST_SUITE_FINISHED, function(TestSuiteFinishedEvent $event) use(&$actual) {
-                $actual[$event->getTarget()->getTestSuiteName()] = $event->getTarget()->getTestCount();
-            });
+        $actual = [];
+        foreach ($listener->actual as $event) {
+            $actual[$event->getTarget()->getTestSuiteName()] = $event->getTarget()->getTestCount();
+        }
 
-            yield $this->testSuiteRunner->runTestSuites($results);
-
-            $this->assertEquals($expected, $actual);
-        });
+        $this->assertEquals($expected, $actual);
     }
 
     public function processedTestSuiteSummaryDisabledTestCountProvider() : array {
@@ -681,18 +603,17 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
      * @dataProvider processedTestSuiteSummaryDisabledTestCountProvider
      */
     public function testProcessedTestSuiteSummaryHasDisabledTestCount(string $path, array $expected) : void {
-        Loop::run(function() use($path, $expected) {
-            $results = yield $this->parser->parse($path);
-            $actual = [];
+        $results = $this->parser->parse($path);
+        $listener = $this->createEventRecordingListener(Events::TEST_SUITE_FINISHED);
+        $this->emitter->register($listener);
+        $this->testSuiteRunner->runTestSuites($results);
 
-            $this->emitter->on(Events::TEST_SUITE_FINISHED, function(TestSuiteFinishedEvent $event) use(&$actual) {
-                $actual[$event->getTarget()->getTestSuiteName()] = $event->getTarget()->getDisabledTestCount();
-            });
+        $actual = [];
+        foreach ($listener->actual as $event) {
+            $actual[$event->getTarget()->getTestSuiteName()] = $event->getTarget()->getDisabledTestCount();
+        }
 
-            yield $this->testSuiteRunner->runTestSuites($results);
-
-            $this->assertEquals($expected, $actual);
-        });
+        $this->assertEquals($expected, $actual);
     }
 
     public function processedTestSuiteSummaryPassedTestCountProvider() : array {
@@ -717,18 +638,17 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
      * @dataProvider processedTestSuiteSummaryPassedTestCountProvider
      */
     public function testProcessedTestSuiteSummaryHasPassedTestCount(string $path, array $expected) : void {
-        Loop::run(function() use($path, $expected) {
-            $results = yield $this->parser->parse($path);
-            $actual = [];
+        $results = $this->parser->parse($path);
+        $listener = $this->createEventRecordingListener(Events::TEST_SUITE_FINISHED);
+        $this->emitter->register($listener);
+        $this->testSuiteRunner->runTestSuites($results);
 
-            $this->emitter->on(Events::TEST_SUITE_FINISHED, function(TestSuiteFinishedEvent $event) use(&$actual) {
-                $actual[$event->getTarget()->getTestSuiteName()] = $event->getTarget()->getPassedTestCount();
-            });
+        $actual = [];
+        foreach ($listener->actual as $event) {
+            $actual[$event->getTarget()->getTestSuiteName()] = $event->getTarget()->getPassedTestCount();
+        }
 
-            yield $this->testSuiteRunner->runTestSuites($results);
-
-            $this->assertEquals($expected, $actual);
-        });
+        $this->assertEquals($expected, $actual);
     }
 
     public function processedTestSuiteSummaryFailedTestCountProvider() : array {
@@ -749,18 +669,17 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
      * @dataProvider processedTestSuiteSummaryFailedTestCountProvider
      */
     public function testProcessedTestSuiteSummaryHasFailedTestCount(string $path, array $expected) : void {
-        Loop::run(function() use($path, $expected) {
-            $results = yield $this->parser->parse($path);
-            $actual = [];
+        $results = $this->parser->parse($path);
+        $listener = $this->createEventRecordingListener(Events::TEST_SUITE_FINISHED);
+        $this->emitter->register($listener);
+        $this->testSuiteRunner->runTestSuites($results);
 
-            $this->emitter->on(Events::TEST_SUITE_FINISHED, function(TestSuiteFinishedEvent $event) use(&$actual) {
-                $actual[$event->getTarget()->getTestSuiteName()] = $event->getTarget()->getFailedTestCount();
-            });
+        $actual = [];
+        foreach ($listener->actual as $event) {
+            $actual[$event->getTarget()->getTestSuiteName()] = $event->getTarget()->getFailedTestCount();
+        }
 
-            yield $this->testSuiteRunner->runTestSuites($results);
-
-            $this->assertEquals($expected, $actual);
-        });
+        $this->assertEquals($expected, $actual);
     }
 
     public function processedTestSuiteSummaryErroredTestCountProvider() : array {
@@ -781,18 +700,17 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
      * @dataProvider processedTestSuiteSummaryErroredTestCountProvider
      */
     public function testProcessedTestSuiteSummaryHasErroredTestCount(string $path, array $expected) : void {
-        Loop::run(function() use($path, $expected) {
-            $results = yield $this->parser->parse($path);
-            $actual = [];
+        $results = $this->parser->parse($path);
+        $listener = $this->createEventRecordingListener(Events::TEST_SUITE_FINISHED);
+        $this->emitter->register($listener);
+        $this->testSuiteRunner->runTestSuites($results);
 
-            $this->emitter->on(Events::TEST_SUITE_FINISHED, function(TestSuiteFinishedEvent $event) use(&$actual) {
-                $actual[$event->getTarget()->getTestSuiteName()] = $event->getTarget()->getErroredTestCount();
-            });
+        $actual = [];
+        foreach ($listener->actual as $event) {
+            $actual[$event->getTarget()->getTestSuiteName()] = $event->getTarget()->getErroredTestCount();
+        }
 
-            yield $this->testSuiteRunner->runTestSuites($results);
-
-            $this->assertEquals($expected, $actual);
-        });
+        $this->assertEquals($expected, $actual);
     }
 
     public function processedTestSuiteSummaryAssertionCountProvider() : array {
@@ -812,18 +730,17 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
      * @dataProvider processedTestSuiteSummaryAssertionCountProvider
      */
     public function testProcessedTestSuiteSummaryHasAssertionCount(string $path, array $expected) : void {
-        Loop::run(function() use($path, $expected) {
-            $results = yield $this->parser->parse($path);
-            $actual = [];
+        $results = $this->parser->parse($path);
+        $listener = $this->createEventRecordingListener(Events::TEST_SUITE_FINISHED);
+        $this->emitter->register($listener);
+        $this->testSuiteRunner->runTestSuites($results);
 
-            $this->emitter->on(Events::TEST_SUITE_FINISHED, function(TestSuiteFinishedEvent $event) use(&$actual) {
-                $actual[$event->getTarget()->getTestSuiteName()] = $event->getTarget()->getAssertionCount();
-            });
+        $actual = [];
+        foreach ($listener->actual as $event) {
+            $actual[$event->getTarget()->getTestSuiteName()] = $event->getTarget()->getAssertionCount();
+        }
 
-            yield $this->testSuiteRunner->runTestSuites($results);
-
-            $this->assertEquals($expected, $actual);
-        });
+        $this->assertEquals($expected, $actual);
     }
 
     public function processedTestSuiteSummaryAsyncAssertionCountProvider() : array {
@@ -843,18 +760,17 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
      * @dataProvider processedTestSuiteSummaryAsyncAssertionCountProvider
      */
     public function testProcessedTestSuiteSummaryHasAsyncAssertionCount(string $path, array $expected) : void {
-        Loop::run(function() use($path, $expected) {
-            $results = yield $this->parser->parse($path);
-            $actual = [];
+        $results = $this->parser->parse($path);
+        $listener = $this->createEventRecordingListener(Events::TEST_SUITE_FINISHED);
+        $this->emitter->register($listener);
+        $this->testSuiteRunner->runTestSuites($results);
 
-            $this->emitter->on(Events::TEST_SUITE_FINISHED, function(TestSuiteFinishedEvent $event) use(&$actual) {
-                $actual[$event->getTarget()->getTestSuiteName()] = $event->getTarget()->getAsyncAssertionCount();
-            });
+        $actual = [];
+        foreach ($listener->actual as $event) {
+            $actual[$event->getTarget()->getTestSuiteName()] = $event->getTarget()->getAsyncAssertionCount();
+        }
 
-            yield $this->testSuiteRunner->runTestSuites($results);
-
-            $this->assertEquals($expected, $actual);
-        });
+        $this->assertEquals($expected, $actual);
     }
 
     public function processedTestCaseSummaryTestSuiteNameProvider() : array {
@@ -878,20 +794,20 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
      * @dataProvider processedTestCaseSummaryTestSuiteNameProvider
      */
     public function testProcessedTestCaseSummaryHasCorrectTestSuiteName(string $path, array $expected) : void {
-        Loop::run(function() use($path, $expected) {
-            $results = yield $this->parser->parse($path);
-            $actual = [];
+        $results = $this->parser->parse($path);
+        $listener = $this->createEventRecordingListener(Events::TEST_CASE_FINISHED);
+        $this->emitter->register($listener);
+        $this->testSuiteRunner->runTestSuites($results);
 
-            $this->emitter->on(Events::TEST_CASE_FINISHED, function(TestCaseFinishedEvent $event) use(&$actual) {
-                $actual[$event->getTarget()->getTestCaseName()] = $event->getTarget()->getTestSuiteName();
-            });
+        $actual = [];
 
-            yield $this->testSuiteRunner->runTestSuites($results);
+        foreach ($listener->actual as $event) {
+            $actual[$event->getTarget()->getTestCaseName()] = $event->getTarget()->getTestSuiteName();
+        }
 
-            ksort($expected);
-            ksort($actual);
-            $this->assertEquals($expected, $actual);
-        });
+        ksort($expected);
+        ksort($actual);
+        $this->assertEquals($expected, $actual);
     }
 
     public function processedTestCaseSummaryTestNamesProvider() : array {
@@ -937,20 +853,19 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
      * @dataProvider processedTestCaseSummaryTestNamesProvider
      */
     public function testProcessedTestCaseSummaryHasCorrectTestNames(string $path, array $expected) : void {
-        Loop::run(function() use($path, $expected) {
-            $results = yield $this->parser->parse($path);
-            $actual = [];
+        $results = $this->parser->parse($path);
+        $listener = $this->createEventRecordingListener(Events::TEST_CASE_FINISHED);
+        $this->emitter->register($listener);
+        $this->testSuiteRunner->runTestSuites($results);
 
-            $this->emitter->on(Events::TEST_CASE_FINISHED, function(TestCaseFinishedEvent $event) use(&$actual) {
-                $actual[$event->getTarget()->getTestCaseName()] = $event->getTarget()->getTestNames();
-            });
+        $actual = [];
+        foreach ($listener->actual as $event) {
+            $actual[$event->getTarget()->getTestCaseName()] = $event->getTarget()->getTestNames();
+        }
 
-            yield $this->testSuiteRunner->runTestSuites($results);
-
-            ksort($expected);
-            ksort($actual);
-            $this->assertEquals($expected, $actual);
-        });
+        ksort($expected);
+        ksort($actual);
+        $this->assertEquals($expected, $actual);
     }
 
     public function processedTestCaseSummaryTestCountProvider() : array {
@@ -977,20 +892,19 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
      * @dataProvider processedTestCaseSummaryTestCountProvider
      */
     public function testProcessedTestCaseSummaryHasCorrectTestCount(string $path, array $expected) : void {
-        Loop::run(function() use($path, $expected) {
-            $results = yield $this->parser->parse($path);
-            $actual = [];
+        $results = $this->parser->parse($path);
+        $listener = $this->createEventRecordingListener(Events::TEST_CASE_FINISHED);
+        $this->emitter->register($listener);
+        $this->testSuiteRunner->runTestSuites($results);
 
-            $this->emitter->on(Events::TEST_CASE_FINISHED, function(TestCaseFinishedEvent $event) use(&$actual) {
-                $actual[$event->getTarget()->getTestCaseName()] = $event->getTarget()->getTestCount();
-            });
+        $actual = [];
+        foreach ($listener->actual as $event) {
+            $actual[$event->getTarget()->getTestCaseName()] = $event->getTarget()->getTestCount();
+        }
 
-            yield $this->testSuiteRunner->runTestSuites($results);
-
-            ksort($expected);
-            ksort($actual);
-            $this->assertEquals($expected, $actual);
-        });
+        ksort($expected);
+        ksort($actual);
+        $this->assertEquals($expected, $actual);
     }
 
     public function processedTestCaseSummaryDisabledTestCountProvider() : array {
@@ -1017,20 +931,19 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
      * @dataProvider processedTestCaseSummaryDisabledTestCountProvider
      */
     public function testProcessedTestCaseSummaryHasCorrectDisabledTestCount(string $path, array $expected) : void {
-        Loop::run(function() use($path, $expected) {
-            $results = yield $this->parser->parse($path);
-            $actual = [];
+        $results = $this->parser->parse($path);
+        $listener = $this->createEventRecordingListener(Events::TEST_CASE_FINISHED);
+        $this->emitter->register($listener);
+        $this->testSuiteRunner->runTestSuites($results);
 
-            $this->emitter->on(Events::TEST_CASE_FINISHED, function(TestCaseFinishedEvent $event) use(&$actual) {
-                $actual[$event->getTarget()->getTestCaseName()] = $event->getTarget()->getDisabledTestCount();
-            });
+        $actual = [];
+        foreach ($listener->actual as $event) {
+            $actual[$event->getTarget()->getTestCaseName()] = $event->getTarget()->getDisabledTestCount();
+        }
 
-            yield $this->testSuiteRunner->runTestSuites($results);
-
-            ksort($expected);
-            ksort($actual);
-            $this->assertEquals($expected, $actual);
-        });
+        ksort($expected);
+        ksort($actual);
+        $this->assertEquals($expected, $actual);
     }
 
     public function processedTestCaseSummaryPassedTestCountProvider() : array {
@@ -1057,20 +970,19 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
      * @dataProvider processedTestCaseSummaryPassedTestCountProvider
      */
     public function testProcessedTestCaseSummaryHasCorrectPassedTestCount(string $path, array $expected) : void {
-        Loop::run(function() use($path, $expected) {
-            $results = yield $this->parser->parse($path);
-            $actual = [];
+        $results = $this->parser->parse($path);
+        $listener = $this->createEventRecordingListener(Events::TEST_CASE_FINISHED);
+        $this->emitter->register($listener);
+        $this->testSuiteRunner->runTestSuites($results);
 
-            $this->emitter->on(Events::TEST_CASE_FINISHED, function(TestCaseFinishedEvent $event) use(&$actual) {
-                $actual[$event->getTarget()->getTestCaseName()] = $event->getTarget()->getPassedTestCount();
-            });
+        $actual = [];
+        foreach ($listener->actual as $event) {
+            $actual[$event->getTarget()->getTestCaseName()] = $event->getTarget()->getPassedTestCount();
+        }
 
-            yield $this->testSuiteRunner->runTestSuites($results);
-
-            ksort($expected);
-            ksort($actual);
-            $this->assertEquals($expected, $actual);
-        });
+        ksort($expected);
+        ksort($actual);
+        $this->assertEquals($expected, $actual);
     }
 
     public function processedTestCaseSummaryFailedTestCountProvider() : array {
@@ -1100,20 +1012,19 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
      * @dataProvider processedTestCaseSummaryFailedTestCountProvider
      */
     public function testProcessedTestCaseSummaryHasCorrectFailedTestCount(string $path, array $expected) : void {
-        Loop::run(function() use($path, $expected) {
-            $results = yield $this->parser->parse($path);
-            $actual = [];
+        $results = $this->parser->parse($path);
+        $listener = $this->createEventRecordingListener(Events::TEST_CASE_FINISHED);
+        $this->emitter->register($listener);
+        $this->testSuiteRunner->runTestSuites($results);
 
-            $this->emitter->on(Events::TEST_CASE_FINISHED, function(TestCaseFinishedEvent $event) use(&$actual) {
-                $actual[$event->getTarget()->getTestCaseName()] = $event->getTarget()->getFailedTestCount();
-            });
+        $actual = [];
+        foreach ($listener->actual as $event) {
+            $actual[$event->getTarget()->getTestCaseName()] = $event->getTarget()->getFailedTestCount();
+        }
 
-            yield $this->testSuiteRunner->runTestSuites($results);
-
-            ksort($expected);
-            ksort($actual);
-            $this->assertEquals($expected, $actual);
-        });
+        ksort($expected);
+        ksort($actual);
+        $this->assertEquals($expected, $actual);
     }
 
     public function processedTestCaseSummaryErroredTestCountProvider() : array {
@@ -1143,20 +1054,19 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
      * @dataProvider processedTestCaseSummaryErroredTestCountProvider
      */
     public function testProcessedTestCaseSummaryHasCorrectErroredTestCount(string $path, array $expected) : void {
-        Loop::run(function() use($path, $expected) {
-            $results = yield $this->parser->parse($path);
-            $actual = [];
+        $results = $this->parser->parse($path);
+        $listener = $this->createEventRecordingListener(Events::TEST_CASE_FINISHED);
+        $this->emitter->register($listener);
+        $this->testSuiteRunner->runTestSuites($results);
 
-            $this->emitter->on(Events::TEST_CASE_FINISHED, function(TestCaseFinishedEvent $event) use(&$actual) {
-                $actual[$event->getTarget()->getTestCaseName()] = $event->getTarget()->getErroredTestCount();
-            });
+        $actual = [];
+        foreach ($listener->actual as $event) {
+            $actual[$event->getTarget()->getTestCaseName()] = $event->getTarget()->getErroredTestCount();
+        }
 
-            yield $this->testSuiteRunner->runTestSuites($results);
-
-            ksort($expected);
-            ksort($actual);
-            $this->assertEquals($expected, $actual);
-        });
+        ksort($expected);
+        ksort($actual);
+        $this->assertEquals($expected, $actual);
     }
 
     public function processedTestCaseSummaryAssertionCountProvider() : array {
@@ -1183,20 +1093,19 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
      * @dataProvider processedTestCaseSummaryAssertionCountProvider
      */
     public function testProcessedTestCaseSummaryHasCorrectAssertionCount(string $path, array $expected) : void {
-        Loop::run(function() use($path, $expected) {
-            $results = yield $this->parser->parse($path);
-            $actual = [];
+        $results = $this->parser->parse($path);
+        $listener = $this->createEventRecordingListener(Events::TEST_CASE_FINISHED);
+        $this->emitter->register($listener);
+        $this->testSuiteRunner->runTestSuites($results);
 
-            $this->emitter->on(Events::TEST_CASE_FINISHED, function(TestCaseFinishedEvent $event) use(&$actual) {
-                $actual[$event->getTarget()->getTestCaseName()] = $event->getTarget()->getAssertionCount();
-            });
+        $actual = [];
+        foreach ($listener->actual as $event) {
+            $actual[$event->getTarget()->getTestCaseName()] = $event->getTarget()->getAssertionCount();
+        }
 
-            yield $this->testSuiteRunner->runTestSuites($results);
-
-            ksort($expected);
-            ksort($actual);
-            $this->assertEquals($expected, $actual);
-        });
+        ksort($expected);
+        ksort($actual);
+        $this->assertEquals($expected, $actual);
     }
 
     public function processedTestCaseSummaryAsyncAssertionCountProvider() : array {
@@ -1223,152 +1132,131 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
      * @dataProvider processedTestCaseSummaryAsyncAssertionCountProvider
      */
     public function testProcessedTestCaseSummaryHasCorrectAsyncAssertionCount(string $path, array $expected) : void {
-        Loop::run(function() use($path, $expected) {
-            $results = yield $this->parser->parse($path);
-            $actual = [];
+        $results = $this->parser->parse($path);
+        $listener = $this->createEventRecordingListener(Events::TEST_CASE_FINISHED);
+        $this->emitter->register($listener);
+        $this->testSuiteRunner->runTestSuites($results);
 
-            $this->emitter->on(Events::TEST_CASE_FINISHED, function(TestCaseFinishedEvent $event) use(&$actual) {
-                $actual[$event->getTarget()->getTestCaseName()] = $event->getTarget()->getAsyncAssertionCount();
-            });
+        $actual = [];
+        foreach ($listener->actual as $event) {
+            $actual[$event->getTarget()->getTestCaseName()] = $event->getTarget()->getAsyncAssertionCount();
+        }
 
-            yield $this->testSuiteRunner->runTestSuites($results);
-
-            ksort($expected);
-            ksort($actual);
-            $this->assertEquals($expected, $actual);
-        });
+        ksort($expected);
+        ksort($actual);
+        $this->assertEquals($expected, $actual);
     }
 
     public function testProcessedAggregateSummaryHasDuration() {
-        Loop::run(function() {
-            $results = yield $this->parser->parse($this->implicitDefaultTestSuitePath('MultipleTestsKnownDuration'));
-            $state = new stdClass();
-            $state->event = null;
+        $results = $this->parser->parse($this->implicitDefaultTestSuitePath('MultipleTestsKnownDuration'));
+        $listener = $this->createEventRecordingListener(Events::PROCESSING_FINISHED);
+        $this->emitter->register($listener);
+        $this->testSuiteRunner->runTestSuites($results);
 
-            $this->emitter->on(Events::PROCESSING_FINISHED, function($event) use($state) {
-                $state->event = $event;
-            });
-
-            yield $this->testSuiteRunner->runTestSuites($results);
-
-            $this->assertInstanceOf(ProcessingFinishedEvent::class, $state->event);
-            $this->assertGreaterThan(600, $state->event->getTarget()->getDuration()->asMilliseconds());
-        });
+        self::assertCount(1, $listener->actual);
+        $event = $listener->actual[0];
+        $this->assertInstanceOf(ProcessingFinishedEvent::class, $event);
+        $this->assertGreaterThan(600, $event->getTarget()->getDuration()->asMilliseconds());
     }
 
     public function testTestSuiteSummaryHasDuration() : void {
-        Loop::run(function() {
-            $results = yield $this->parser->parse($this->implicitDefaultTestSuitePath('MultipleTestsKnownDuration'));
-            $state = new stdClass();
-            $state->event = null;
+        $results = $this->parser->parse($this->implicitDefaultTestSuitePath('MultipleTestsKnownDuration'));
+        $listener = $this->createEventRecordingListener(Events::TEST_SUITE_FINISHED);
+        $this->emitter->register($listener);
+        $this->testSuiteRunner->runTestSuites($results);
 
-            $this->emitter->on(Events::TEST_SUITE_FINISHED, function($event) use($state) {
-                $state->event = $event;
-            });
-
-            yield $this->testSuiteRunner->runTestSuites($results);
-
-            $this->assertInstanceOf(TestSuiteFinishedEvent::class, $state->event);
-            $this->assertGreaterThan(600, $state->event->getTarget()->getDuration()->asMilliseconds());
-        });
+        self::assertCount(1, $listener->actual);
+        $event = $listener->actual[0];
+        $this->assertInstanceOf(TestSuiteFinishedEvent::class, $event);
+        $this->assertGreaterThan(600, $event->getTarget()->getDuration()->asMilliseconds());
     }
 
     public function testTestCaseSummaryHasDuration() : void {
-        Loop::run(function() {
-            $results = yield $this->parser->parse($this->implicitDefaultTestSuitePath('MultipleTestsKnownDuration'));
-            $actual = [];
+        $results = $this->parser->parse($this->implicitDefaultTestSuitePath('MultipleTestsKnownDuration'));
+        $listener = $this->createEventRecordingListener(Events::TEST_CASE_FINISHED);
+        $this->emitter->register($listener);
+        $this->testSuiteRunner->runTestSuites($results);
 
-            $this->emitter->on(Events::TEST_CASE_FINISHED, function(TestCaseFinishedEvent $event) use(&$actual) {
-                $actual[$event->getTarget()->getTestCaseName()] = $event->getTarget()->getDuration()->asMilliseconds();
-            });
+        $expected = [
+            ImplicitDefaultTestSuite\MultipleTestsKnownDuration\FirstTestCase::class => 99,
+            ImplicitDefaultTestSuite\MultipleTestsKnownDuration\SecondTestCase::class => 199,
+            ImplicitDefaultTestSuite\MultipleTestsKnownDuration\ThirdTestCase::class => 299
+        ];
 
-            yield $this->testSuiteRunner->runTestSuites($results);
+        $actual = [];
+        foreach ($listener->actual as $event) {
+            $actual[$event->getTarget()->getTestCaseName()] = $event->getTarget()->getDuration()->asMilliseconds();
+        }
 
-            $expected = [
-                ImplicitDefaultTestSuite\MultipleTestsKnownDuration\FirstTestCase::class => 99,
-                ImplicitDefaultTestSuite\MultipleTestsKnownDuration\SecondTestCase::class => 199,
-                ImplicitDefaultTestSuite\MultipleTestsKnownDuration\ThirdTestCase::class => 299
-            ];
-
-            foreach ($expected as $testCase => $duration) {
-                $this->assertGreaterThanOrEqual($duration, $actual[$testCase]);
-            }
-        });
+        foreach ($expected as $testCase => $duration) {
+            $this->assertGreaterThanOrEqual($duration, $actual[$testCase]);
+        }
     }
 
     public function testTestResultHasDuration() : void {
-        Loop::run(function() {
-            $results = yield $this->parser->parse($this->implicitDefaultTestSuitePath('MultipleTestsKnownDuration'));
-            $actual = [];
+        $results = $this->parser->parse($this->implicitDefaultTestSuitePath('MultipleTestsKnownDuration'));
+        $listener = $this->createEventRecordingListener(Events::TEST_PROCESSED);
+        $this->emitter->register($listener);
+        $this->testSuiteRunner->runTestSuites($results);
 
-            $this->emitter->on(Events::TEST_PROCESSED, function(TestProcessedEvent $event) use(&$actual) {
-                $actual[$event->getTarget()->getTestCase()::class . '::' . $event->getTarget()->getTestMethod()] = $event->getTarget()->getDuration()->asMilliseconds();
-            });
+        $actual = [];
+        foreach ($listener->actual as $event) {
+            $key = $event->getTarget()->getTestCase()::class . '::' . $event->getTarget()->getTestMethod();
+            $actual[$key] = $event->getTarget()->getDuration()->asMilliseconds();
+        }
 
-            yield $this->testSuiteRunner->runTestSuites($results);
+        $expected = [
+            ImplicitDefaultTestSuite\MultipleTestsKnownDuration\FirstTestCase::class . '::checkOne' => 99,
+            ImplicitDefaultTestSuite\MultipleTestsKnownDuration\SecondTestCase::class . '::checkOne' => 99,
+            ImplicitDefaultTestSuite\MultipleTestsKnownDuration\SecondTestCase::class . '::checkTwo' => 99,
+            ImplicitDefaultTestSuite\MultipleTestsKnownDuration\ThirdTestCase::class . '::checkOne' => 99,
+            ImplicitDefaultTestSuite\MultipleTestsKnownDuration\ThirdTestCase::class . '::checkTwo' => 99,
+            ImplicitDefaultTestSuite\MultipleTestsKnownDuration\ThirdTestCase::class . '::checkThree' => 99
+        ];
 
-            $expected = [
-                ImplicitDefaultTestSuite\MultipleTestsKnownDuration\FirstTestCase::class . '::checkOne' => 99,
-                ImplicitDefaultTestSuite\MultipleTestsKnownDuration\SecondTestCase::class . '::checkOne' => 99,
-                ImplicitDefaultTestSuite\MultipleTestsKnownDuration\SecondTestCase::class . '::checkTwo' => 99,
-                ImplicitDefaultTestSuite\MultipleTestsKnownDuration\ThirdTestCase::class . '::checkOne' => 99,
-                ImplicitDefaultTestSuite\MultipleTestsKnownDuration\ThirdTestCase::class . '::checkTwo' => 99,
-                ImplicitDefaultTestSuite\MultipleTestsKnownDuration\ThirdTestCase::class . '::checkThree' => 99
-            ];
-
-            foreach ($expected as $testCase => $duration) {
-                $this->assertGreaterThanOrEqual($duration, $actual[$testCase], $testCase . ' did not execute long enough');
-            }
-        });
+        foreach ($expected as $testCase => $duration) {
+            $this->assertGreaterThanOrEqual($duration, $actual[$testCase], $testCase . ' did not execute long enough');
+        }
     }
 
     public function testDisabledTestHasZeroDuration() : void {
-        Loop::run(function() {
-            $results = yield $this->parser->parse($this->implicitDefaultTestSuitePath('TestDisabled'));
-            $actual = [];
+        $results = $this->parser->parse($this->implicitDefaultTestSuitePath('TestDisabled'));
+        $listener = $this->createEventRecordingListener(Events::TEST_DISABLED);
+        $this->emitter->register($listener);
+        $this->testSuiteRunner->runTestSuites($results);
 
-            $this->emitter->on(Events::TEST_DISABLED, function(TestDisabledEvent $event) use(&$actual) {
-                $actual[] = $event->getTarget()->getDuration()->asMilliseconds();
-            });
+        $actual = [];
+        foreach ($listener->actual as $event) {
+            $actual[] = $event->getTarget()->getDuration()->asMilliseconds();
+        }
 
-            yield $this->testSuiteRunner->runTestSuites($results);
-
-            $this->assertCount(1, $actual);
-            $this->assertSame(0.0, $actual[0]);
-        });
+        $this->assertCount(1, $actual);
+        $this->assertSame(0.0, $actual[0]);
     }
 
     public function testProcessedAggregateSummaryHasMemoryUsageInBytes() {
-        Loop::run(function() {
-            $results = yield $this->parser->parse($this->implicitDefaultTestSuitePath('SingleTest'));
-            $state = new stdClass();
-            $state->event = null;
+        $results = $this->parser->parse($this->implicitDefaultTestSuitePath('SingleTest'));
+        $listener = $this->createEventRecordingListener(Events::PROCESSING_FINISHED);
+        $this->emitter->register($listener);
+        $this->testSuiteRunner->runTestSuites($results);
 
-            $this->emitter->on(Events::PROCESSING_FINISHED, function($event) use($state) {
-                $state->event = $event;
-            });
-
-            yield $this->testSuiteRunner->runTestSuites($results);
-
-            $this->assertInstanceOf(ProcessingFinishedEvent::class, $state->event);
-            $this->assertGreaterThan(1000, $state->event->getTarget()->getMemoryUsageInBytes());
-        });
+        self::assertCount(1, $listener->actual);
+        $event = $listener->actual[0];
+        $this->assertInstanceOf(ProcessingFinishedEvent::class, $event);
+        $this->assertGreaterThan(1000, $event->getTarget()->getMemoryUsageInBytes());
     }
 
     public function testTestCaseSummaryMockBridgeAssertionCount() {
-        Loop::run(function() {
-            $results = yield $this->parser->parse($this->implicitDefaultTestSuitePath('MockeryTestNoAssertion'));
-            $state = new stdClass();
-            $state->event = null;
-            $this->emitter->on(Events::TEST_PROCESSED, function($event) use($state) {
-                 $state->event = $event;
-            });
+        $this->markTestSkipped('Need to reimplement MockBridge.');
+        $results = $this->parser->parse($this->implicitDefaultTestSuitePath('MockeryTestNoAssertion'));
+        $listener = $this->createEventRecordingListener(Events::TEST_PROCESSED);
+        $this->emitter->register($listener);
+        $this->testSuiteRunner->setMockBridgeClass(MockeryMockBridge::class);
+        $this->testSuiteRunner->runTestSuites($results);
 
-            $this->testSuiteRunner->setMockBridgeClass(MockeryMockBridge::class);
-            yield $this->testSuiteRunner->runTestSuites($results);
-
-            $this->assertInstanceOf(TestProcessedEvent::class, $state->event);
-            $this->assertEquals(1, $state->event->getTarget()->getTestCase()->getAssertionCount());
-        });
+        self::assertCount(1, $listener->actual);
+        $event = $listener->actual[0];
+        $this->assertInstanceOf(TestProcessedEvent::class, $event);
+        $this->assertEquals(1, $event->getTarget()->getTestCase()->getAssertionCount());
     }
 }

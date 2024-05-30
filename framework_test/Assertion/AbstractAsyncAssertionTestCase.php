@@ -2,17 +2,16 @@
 
 namespace Cspray\Labrador\AsyncUnit\Assertion;
 
-use Amp\Coroutine;
-use Amp\Loop;
-use Amp\Promise;
-use Amp\Success;
+use Amp\Future;
 use Cspray\Labrador\AsyncUnit\AsyncAssertion;
 use Generator;
 use PHPUnit\Framework\TestCase;
+use Revolt\EventLoop;
+use function Amp\async;
 
 abstract class AbstractAsyncAssertionTestCase extends TestCase {
 
-    abstract protected function getAssertion(mixed $expected, Promise|Generator|Coroutine $actual) : AsyncAssertion;
+    abstract protected function getAssertion(mixed $expected, Future|Generator $actual) : AsyncAssertion;
 
     abstract protected function getExpected() : mixed;
 
@@ -28,28 +27,40 @@ abstract class AbstractAsyncAssertionTestCase extends TestCase {
      * @dataProvider getGoodActual
      */
     public function testAssertGoodValueEqualsGoodValue(mixed $actual) {
-        Loop::run(function() use($actual) {
-            $subject = $this->getAssertion($this->getExpected(), new Success($actual));
-            $results = yield $subject->assert();
+        $suspension = EventLoop::getSuspension();
+        EventLoop::defer(function() use($actual, $suspension) {
+            try {
+                $subject = $this->getAssertion($this->getExpected(), async(fn() => $actual));
+                $results = $subject->assert()->await();
 
-            $this->assertTrue($results->isSuccessful());
-            $this->assertInstanceOf($this->getSummaryAssertionMessageClass(), $results->getSummary());
-            $this->assertInstanceOf($this->getDetailsAssertionMessageClass(), $results->getDetails());
+                $this->assertTrue($results->isSuccessful());
+                $this->assertInstanceOf($this->getSummaryAssertionMessageClass(), $results->getSummary());
+                $this->assertInstanceOf($this->getDetailsAssertionMessageClass(), $results->getDetails());
+            } finally {
+                $suspension->resume();
+            }
         });
+        $suspension->suspend();
     }
 
     /**
      * @dataProvider getBadActual
      */
     public function testAssertGoodValueDoesNotEqualBadValueInformation(mixed $actual) {
-        Loop::run(function() use($actual) {
-            $subject = $this->getAssertion($this->getExpected(), new Success($actual));
-            $results = yield $subject->assert();
+        $suspension = EventLoop::getSuspension();
+        EventLoop::defer(function() use($actual, $suspension) {
+            try {
+                $subject = $this->getAssertion($this->getExpected(), async(fn() => $actual));
+                $results = $subject->assert()->await();
 
-            $this->assertFalse($results->isSuccessful());
-            $this->assertInstanceOf($this->getSummaryAssertionMessageClass(), $results->getSummary());
-            $this->assertInstanceOf($this->getDetailsAssertionMessageClass(), $results->getDetails());
+                $this->assertFalse($results->isSuccessful());
+                $this->assertInstanceOf($this->getSummaryAssertionMessageClass(), $results->getSummary());
+                $this->assertInstanceOf($this->getDetailsAssertionMessageClass(), $results->getDetails());
+            } finally {
+                $suspension->resume();
+            }
         });
+        $suspension->suspend();
     }
 
 }

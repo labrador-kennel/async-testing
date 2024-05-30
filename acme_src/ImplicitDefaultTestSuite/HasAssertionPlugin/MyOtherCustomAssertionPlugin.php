@@ -2,8 +2,6 @@
 
 namespace Acme\DemoSuites\ImplicitDefaultTestSuite\HasAssertionPlugin;
 
-use Amp\Promise;
-use Amp\Success;
 use Countable;
 use Cspray\Labrador\AsyncUnit\Assertion\AssertIsTrue;
 use Cspray\Labrador\AsyncUnit\Context\CustomAssertionContext;
@@ -12,18 +10,17 @@ use Stringable;
 
 class MyOtherCustomAssertionPlugin implements Countable, Stringable, CustomAssertionPlugin {
 
-    public function registerCustomAssertions(CustomAssertionContext $customAssertionContext) : Promise {
+    public function registerCustomAssertions(CustomAssertionContext $customAssertionContext) : void {
         $customAssertionContext->registerAssertion('myOtherCustomAssertion', function() {
             return new AssertIsTrue(true);
         });
-        return new Success();
     }
 
     public function __toString() {
         return '';
     }
 
-    public function count() {
+    public function count() : int {
         return 0;
     }
 }

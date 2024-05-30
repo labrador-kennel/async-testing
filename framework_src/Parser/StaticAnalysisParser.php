@@ -3,9 +3,7 @@
 namespace Cspray\Labrador\AsyncUnit\Parser;
 
 use Amp\ByteStream\Payload;
-use Amp\File\Driver;
-use Amp\File\File;
-use Amp\Promise;
+use Amp\File\Filesystem;
 use Cspray\Labrador\AsyncUnit\ImplicitTestSuite;
 use Cspray\Labrador\AsyncUnit\Model\TestSuiteModel;
 use PhpParser\NodeTraverser;
@@ -13,7 +11,6 @@ use PhpParser\NodeVisitor\NameResolver;
 use PhpParser\NodeVisitor\NodeConnectingVisitor;
 use PhpParser\Parser as PhpParser;
 use PhpParser\ParserFactory;
-use function Amp\call;
 use function Amp\File\filesystem;
 
 /**
@@ -29,7 +26,7 @@ final class StaticAnalysisParser implements Parser {
 
     private PhpParser $phpParser;
     private NodeTraverser $nodeTraverser;
-    private Driver $filesystem;
+    private Filesystem $filesystem;
 
     public function __construct() {
         $this->phpParser = (new ParserFactory())->create(ParserFactory::ONLY_PHP7);
@@ -37,65 +34,56 @@ final class StaticAnalysisParser implements Parser {
         $this->filesystem = filesystem();
     }
 
-    /**
-     * @param string|array $dirs
-     * @return Promise<ParserResult>
-     */
-    public function parse(string|array $dirs) : Promise {
-        return call(function() use($dirs) {
-            $dirs = is_string($dirs) ? [$dirs] : $dirs;
+    public function parse(string|array $dirs) : ParserResult {
+        $dirs = is_string($dirs) ? [$dirs] : $dirs;
 
-            $collector = new AsyncUnitModelCollector();
-            $nodeConnectingVisitor = new NodeConnectingVisitor();
-            $nameResolver = new NameResolver();
-            $asyncUnitVisitor = new AsyncUnitModelNodeVisitor($collector);
+        $collector = new AsyncUnitModelCollector();
+        $nodeConnectingVisitor = new NodeConnectingVisitor();
+        $nameResolver = new NameResolver();
+        $asyncUnitVisitor = new AsyncUnitModelNodeVisitor($collector);
 
-            $this->nodeTraverser->addVisitor($nameResolver);
-            $this->nodeTraverser->addVisitor($nodeConnectingVisitor);
-            $this->nodeTraverser->addVisitor($asyncUnitVisitor);
+        $this->nodeTraverser->addVisitor($nameResolver);
+        $this->nodeTraverser->addVisitor($nodeConnectingVisitor);
+        $this->nodeTraverser->addVisitor($asyncUnitVisitor);
 
-            foreach ($dirs as $dir) {
-                yield $this->traverseDir($dir);
-            }
+        foreach ($dirs as $dir) {
+            $this->traverseDir($dir);
+        }
 
-            if (!$collector->hasDefaultTestSuite()) {
-                $collector->attachTestSuite(new TestSuiteModel(ImplicitTestSuite::class, true));
-            }
-            $collector->finishedCollection();
+        if (!$collector->hasDefaultTestSuite()) {
+            $collector->attachTestSuite(new TestSuiteModel(ImplicitTestSuite::class, true));
+        }
+        $collector->finishedCollection();
 
-            return new ParserResult($collector);
-        });
+        return new ParserResult($collector);
     }
 
-    private function traverseDir(string $dir) : Promise {
-        return call(function() use($dir) {
-            $files = yield $this->filesystem->scandir($dir);
+    private function traverseDir(string $dir) : void {
+        $files = $this->filesystem->listFiles($dir);
 
-            foreach ($files as $fileOrDir) {
-                $fullPath = $dir . '/' . $fileOrDir;
-                if (yield $this->filesystem->isdir($fullPath)) {
-                    yield $this->traverseDir($fullPath);
-                } else {
-                    $pathFragments = explode(DIRECTORY_SEPARATOR, $fullPath);
-                    $lastPathFragment = array_pop($pathFragments);
-                    if (!strpos($lastPathFragment, '.')) {  // intentionally treating 0 as false because a hidden file shouldn't be tested
-                        continue;
-                    }
-                    $extension = strtolower(explode('.', $lastPathFragment, 2)[1]);
-                    if ($extension !== 'php') {
-                        continue;
-                    }
-                    /** @var File $handle */
-                    $handle = yield $this->filesystem->open($fullPath, 'r');
-                    $contents = yield (new Payload($handle))->buffer();
-                    $statements = $this->phpParser->parse($contents);
-                    $this->nodeTraverser->traverse($statements);
-                    yield $handle->close();
-                    unset($handle);
-                    unset($contents);
+        foreach ($files as $fileOrDir) {
+            $fullPath = $dir . '/' . $fileOrDir;
+            if ($this->filesystem->isDirectory($fullPath)) {
+                $this->traverseDir($fullPath);
+            } else {
+                $pathFragments = explode(DIRECTORY_SEPARATOR, $fullPath);
+                $lastPathFragment = array_pop($pathFragments);
+                if (!strpos($lastPathFragment, '.')) {  // intentionally treating 0 as false because a hidden file shouldn't be tested
+                    continue;
                 }
+                $extension = strtolower(explode('.', $lastPathFragment, 2)[1]);
+                if ($extension !== 'php') {
+                    continue;
+                }
+
+                $handle = $this->filesystem->openFile($fullPath, 'r');
+                $statements = $this->phpParser->parse($handle->read());
+                $this->nodeTraverser->traverse($statements);
+                $handle->close();
+
+                unset($handle, $contents);
             }
-        });
+        }
     }
 
 }

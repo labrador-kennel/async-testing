@@ -5,21 +5,23 @@ namespace Acme\DemoSuites\ImplicitDefaultTestSuite\MultipleTestsKnownDuration;
 
 
 use Amp\Delayed;
+use Amp\Future;
 use Amp\Success;
 use Cspray\Labrador\AsyncUnit\Attribute\Test;
 use Cspray\Labrador\AsyncUnit\TestCase;
+use function Amp\delay;
 
 class SecondTestCase extends TestCase {
 
     #[Test]
     public function checkOne() {
-        yield new Delayed(100);
-        yield $this->asyncAssert()->isEmpty(new Success([]));
+        delay(0.1);
+        $this->asyncAssert()->isEmpty(Future::complete([]));
     }
 
     #[Test]
     public function checkTwo() {
-        yield new Delayed(100);
+        delay(0.1);
         $this->assert()->isTrue(true);
     }
 

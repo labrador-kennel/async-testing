@@ -2,7 +2,7 @@
 
 namespace Cspray\Labrador\AsyncUnit\Stub;
 
-use Amp\Success;
+use Amp\Future;
 use Cspray\Labrador\AsyncUnit\TestCase;
 
 class AssertNotTestCase extends TestCase {
@@ -22,7 +22,7 @@ class AssertNotTestCase extends TestCase {
     }
 
     public function doAsyncNotAssertion() {
-        yield $this->asyncAssert()->not()->intEquals(1, new Success(2));
+        $this->asyncAssert()->not()->intEquals(1, Future::complete(2));
     }
 
 }

@@ -46,7 +46,7 @@ final class AsyncUnitModelNodeVisitor extends NodeVisitorAbstract implements Nod
             CustomAssertionPlugin::class,
             ResultPrinterPlugin::class
         ];
-        if ($node instanceof Node\Stmt\Class_) {
+        if ($node instanceof Node\Stmt\Class_ && $node->namespacedName !== null) {
             $class = $node->namespacedName->toString();
             if (is_subclass_of($class, TestSuite::class)) {
                 $defaultTestSuiteAttribute = $this->findAttribute(DefaultTestSuite::class, ...$node->attrGroups);

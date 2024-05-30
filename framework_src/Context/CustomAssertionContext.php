@@ -2,7 +2,6 @@
 
 namespace Cspray\Labrador\AsyncUnit\Context;
 
-use Amp\Promise;
 use Cspray\Labrador\AsyncUnit\Assertion;
 use Cspray\Labrador\AsyncUnit\AssertionResult;
 use Cspray\Labrador\AsyncUnit\AsyncAssertion;
@@ -16,10 +15,7 @@ final class CustomAssertionContext {
     private array $assertions = [];
     private array $asyncAssertions = [];
 
-    /**
-     * @codeCoverageIgnore
-     */
-    private function __construct() {}
+    public function __construct() {}
 
     public function registerAssertion(string $methodName, callable $assertionFactory) : void {
         $this->ensureValidMethodName($methodName, 'assertion');

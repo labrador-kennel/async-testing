@@ -5,13 +5,17 @@ namespace Cspray\Labrador\AsyncUnit\Attribute;
 use Attribute;
 
 /**
- * Class Prototype
- * @package Cspray\Labrador\AsyncUnit\Attribute
+ *
+ *
  * @codeCoverageIgnore
+ * @api
  */
 #[Attribute(Attribute::TARGET_CLASS)]
 final class Prototype {
 
-    public function __construct(private array $validTypes) {}
+    /**
+     * @param non-empty-list<class-string> $validTypes
+     */
+    public function __construct(public readonly array $validTypes) {}
 
 }
