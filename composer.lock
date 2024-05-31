@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "c836bb2101f9c7cbaef7e21c64b04b5e",
+    "content-hash": "9122679203539eb44cabc5f2f97a367a",
     "packages": [
         {
             "name": "amphp/amp",
@@ -1101,16 +1101,16 @@
         },
         {
             "name": "labrador-kennel/async-event",
-            "version": "v4.0.0",
+            "version": "v4.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/labrador-kennel/async-event.git",
-                "reference": "932791a3d49990e0d56addf696dcc56d00f569a3"
+                "reference": "f7a625c3be9812d2cb9a58d2b4e08f6b81d69207"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/labrador-kennel/async-event/zipball/932791a3d49990e0d56addf696dcc56d00f569a3",
-                "reference": "932791a3d49990e0d56addf696dcc56d00f569a3",
+                "url": "https://api.github.com/repos/labrador-kennel/async-event/zipball/f7a625c3be9812d2cb9a58d2b4e08f6b81d69207",
+                "reference": "f7a625c3be9812d2cb9a58d2b4e08f6b81d69207",
                 "shasum": ""
             },
             "require": {
@@ -1155,9 +1155,9 @@
             ],
             "support": {
                 "issues": "https://github.com/labrador-kennel/async-event/issues",
-                "source": "https://github.com/labrador-kennel/async-event/tree/v4.0.0"
+                "source": "https://github.com/labrador-kennel/async-event/tree/v4.1.0"
             },
-            "time": "2024-05-30T19:39:47+00:00"
+            "time": "2024-05-31T15:11:57+00:00"
         },
         {
             "name": "labrador-kennel/composite-future",
@@ -2589,16 +2589,16 @@
         },
         {
             "name": "phpstan/phpdoc-parser",
-            "version": "1.29.0",
+            "version": "1.29.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpstan/phpdoc-parser.git",
-                "reference": "536889f2b340489d328f5ffb7b02bb6b183ddedc"
+                "reference": "fcaefacf2d5c417e928405b71b400d4ce10daaf4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpdoc-parser/zipball/536889f2b340489d328f5ffb7b02bb6b183ddedc",
-                "reference": "536889f2b340489d328f5ffb7b02bb6b183ddedc",
+                "url": "https://api.github.com/repos/phpstan/phpdoc-parser/zipball/fcaefacf2d5c417e928405b71b400d4ce10daaf4",
+                "reference": "fcaefacf2d5c417e928405b71b400d4ce10daaf4",
                 "shasum": ""
             },
             "require": {
@@ -2630,9 +2630,9 @@
             "description": "PHPDoc parser with support for nullable, intersection and generic types",
             "support": {
                 "issues": "https://github.com/phpstan/phpdoc-parser/issues",
-                "source": "https://github.com/phpstan/phpdoc-parser/tree/1.29.0"
+                "source": "https://github.com/phpstan/phpdoc-parser/tree/1.29.1"
             },
-            "time": "2024-05-06T12:04:23+00:00"
+            "time": "2024-05-31T08:52:43+00:00"
         },
         {
             "name": "phpunit/php-code-coverage",

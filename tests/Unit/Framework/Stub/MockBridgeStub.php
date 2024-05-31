@@ -14,10 +14,10 @@ class MockBridgeStub implements MockBridge {
         $this->calls[] = __FUNCTION__;
     }
 
-    public function createMock(string $class): object {
-        $this->calls[] = __FUNCTION__ . ' ' . $class;
+    public function createMock(string $type): object {
+        $this->calls[] = __FUNCTION__ . ' ' . $type;
         $object = new stdClass();
-        $object->class = $class;
+        $object->class = $type;
         return $object;
     }
 

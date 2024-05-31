@@ -81,7 +81,7 @@ final class StaticAnalysisParser implements Parser {
                 $this->nodeTraverser->traverse($statements);
                 $handle->close();
 
-                unset($handle, $contents);
+                unset($handle);
             }
         }
     }

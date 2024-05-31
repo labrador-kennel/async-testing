@@ -3,7 +3,6 @@
 namespace Labrador\AsyncUnit\Framework\Assertion;
 
 use Countable;
-use Labrador\AsyncUnit\Framework\Context\CustomAssertionContext;
 use Labrador\AsyncUnit\Framework\Exception\AssertionFailedException;
 
 /**

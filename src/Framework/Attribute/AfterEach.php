@@ -5,9 +5,9 @@ namespace Labrador\AsyncUnit\Framework\Attribute;
 
 use Attribute;
 
-#[Attribute]
+#[Attribute(Attribute::TARGET_METHOD)]
 final class AfterEach {
 
-    public function __construct(private int $priority = 0) {}
+    public function __construct(public readonly int $priority = 0) {}
 
 }

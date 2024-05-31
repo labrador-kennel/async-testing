@@ -10,6 +10,12 @@ use PhpParser\Node\AttributeGroup;
  */
 trait AttributeGroupTraverser {
 
+    /**
+     * @template AttributeType as Attribute
+     * @param class-string<AttributeType> $attributeType
+     * @param AttributeGroup ...$attributeGroups
+     * @return Attribute|null
+     */
     private function findAttribute(string $attributeType, AttributeGroup... $attributeGroups) : ?Attribute {
         foreach ($attributeGroups as $attributeGroup) {
             foreach ($attributeGroup->attrs as $attribute) {

@@ -17,17 +17,16 @@ use Labrador\AsyncUnit\Framework\Attribute\Timeout;
 use Labrador\AsyncUnit\Framework\Exception\TestCompilationException;
 use Labrador\AsyncUnit\Framework\HookType;
 use Labrador\AsyncUnit\Framework\Model\HookModel;
-use Labrador\AsyncUnit\Framework\Model\PluginModel;
 use Labrador\AsyncUnit\Framework\Model\TestCaseModel;
 use Labrador\AsyncUnit\Framework\Model\TestModel;
 use Labrador\AsyncUnit\Framework\Model\TestSuiteModel;
-use Labrador\AsyncUnit\Framework\Plugin\CustomAssertionPlugin;
-use Labrador\AsyncUnit\Framework\Plugin\ResultPrinterPlugin;
 use Labrador\AsyncUnit\Framework\TestCase;
 use Labrador\AsyncUnit\Framework\TestSuite;
 use PhpParser\Node;
 use PhpParser\NodeVisitor;
 use PhpParser\NodeVisitorAbstract;
+use ReflectionClass;
+use ReflectionMethod;
 
 /**
  * Responsible for interacting with PHP-Parser to transform Nodes into appropriate AsyncUnit models.
@@ -42,58 +41,43 @@ final class AsyncUnitModelNodeVisitor extends NodeVisitorAbstract implements Nod
     public function leaveNode(Node $node) : void {
         // Do not change this hook from leaveNode, we need the other visitors we rely on to be invoked before we start
         // interacting with nodes. Otherwise your class names may be missing the namespace and not be FQCN
-        $validPluginTypes = [
-            CustomAssertionPlugin::class,
-            ResultPrinterPlugin::class
-        ];
         if ($node instanceof Node\Stmt\Class_ && $node->namespacedName !== null) {
             $class = $node->namespacedName->toString();
             if (is_subclass_of($class, TestSuite::class)) {
-                $defaultTestSuiteAttribute = $this->findAttribute(DefaultTestSuite::class, ...$node->attrGroups);
-                $testSuiteModel = new TestSuiteModel($class, !is_null($defaultTestSuiteAttribute));
-                if ($disabledAttribute = $this->findAttribute(Disabled::class, ...$node->attrGroups)) {
-                    $reason = null;
-                    if (count($disabledAttribute->args) === 1) {
-                        // TODO Make sure that the disabled value is a string, otherwise throw an error
-                        $reason = $disabledAttribute->args[0]->value->value;
-                    }
-                    $testSuiteModel->markDisabled($reason);
+                $testSuiteReflection = new ReflectionClass($class);
+                $hasDefaultTestSuiteAttribute = $testSuiteReflection->getAttributes(DefaultTestSuite::class) !== [];
+                $testSuiteModel = new TestSuiteModel($class, $hasDefaultTestSuiteAttribute);
+                $disabledAttributes = $testSuiteReflection->getAttributes(Disabled::class);
+                if (count($disabledAttributes) === 1) {
+                    $testSuiteModel->markDisabled($disabledAttributes[0]->newInstance()->reason);
                 }
-                if ($timeoutAttribute = $this->findAttribute(Timeout::class, ...$node->attrGroups)) {
-                    $testSuiteModel->setTimeout($timeoutAttribute->args[0]->value->value);
+                $timeoutAttributes = $testSuiteReflection->getAttributes(Timeout::class);
+                if (count($timeoutAttributes) === 1) {
+                    $testSuiteModel->setTimeout($timeoutAttributes[0]->newInstance()->timeoutInMilliseconds);
                 }
                 $this->collector->attachTestSuite($testSuiteModel);
             } else if (is_subclass_of($class, TestCase::class)) {
                 if ($node->isAbstract()) {
                     return;
                 }
-                $testSuiteAttribute = $this->findAttribute(AttachToTestSuite::class, ...$node->attrGroups);
+                $testCaseReflection = new ReflectionClass($class);
+
                 $testSuiteClassName = null;
-                if (!is_null($testSuiteAttribute)) {
-                    // TODO Ensure that a string can be passed to AttachToTestSuite as well as ::class, any other type should throw error
-                    $testSuiteClassName = $testSuiteAttribute->args[0]->value->class->toString();
+                $testSuiteAttributes = $testCaseReflection->getAttributes(AttachToTestSuite::class);
+                if (count($testSuiteAttributes) === 1) {
+                    $testSuiteClassName = $testSuiteAttributes[0]->newInstance()->testSuiteClass;
                 }
                 $testCaseModel = new TestCaseModel($class, $testSuiteClassName);
-                if ($disabledAttribute = $this->findAttribute(Disabled::class, ...$node->attrGroups)) {
-                    $reason = null;
-                    if (count($disabledAttribute->args) === 1) {
-                        // TODO Make sure that the disabled value is a string, otherwise throw an error
-                        $reason = $disabledAttribute->args[0]->value->value;
-                    }
-                    $testCaseModel->markDisabled($reason);
+                $disabledAttributes = $testCaseReflection->getAttributes(Disabled::class);
+                if (count($disabledAttributes) === 1) {
+                    $testCaseModel->markDisabled($disabledAttributes[0]->newInstance()->reason);
                 }
-                if ($timeoutAttribute = $this->findAttribute(Timeout::class, ...$node->attrGroups)) {
-                    // TODO make sure we add more error checks around the presence of an argument and its value matching expected types
-                    $testCaseModel->setTimeout($timeoutAttribute->args[0]->value->value);
+                $timeoutAttributes = $testCaseReflection->getAttributes(Timeout::class);
+                if (count($timeoutAttributes) === 1) {
+                    $testCaseModel->setTimeout($timeoutAttributes[0]->newInstance()->timeoutInMilliseconds);
                 }
 
                 $this->collector->attachTestCase($testCaseModel);
-            } else {
-                foreach ($validPluginTypes as $validPluginType) {
-                    if (is_subclass_of($class, $validPluginType)) {
-                        $this->collector->attachPlugin(new PluginModel($class));
-                    }
-                }
             }
         } else if ($node instanceof Node\Stmt\ClassMethod) {
             $this->collectIfHasAnyAsyncUnitAttribute($node);
@@ -102,13 +86,13 @@ final class AsyncUnitModelNodeVisitor extends NodeVisitorAbstract implements Nod
 
     private function collectIfHasAnyAsyncUnitAttribute(Node\Stmt\ClassMethod $classMethod) : void {
         $validAttributes = [
-            Test::class => fn() => $this->validateTest($classMethod),
-            BeforeAll::class => fn(Node\Attribute $attribute) => $this->validateBeforeAll($attribute, $classMethod),
-            BeforeEach::class => fn(Node\Attribute $attribute) => $this->validateBeforeEach($attribute, $classMethod),
-            AfterAll::class => fn(Node\Attribute $attribute) => $this->validateAfterAll($attribute, $classMethod),
-            AfterEach::class => fn(Node\Attribute $attribute) => $this->validateAfterEach($attribute, $classMethod),
-            BeforeEachTest::class => fn(Node\Attribute $attribute) => $this->validateBeforeEachTest($attribute, $classMethod),
-            AfterEachTest::class => fn(Node\Attribute $attribute) => $this->validateAfterEachTest($attribute, $classMethod)
+            Test::class => $this->validateTest(...),
+            BeforeAll::class => $this->validateBeforeAll(...),
+            BeforeEach::class => $this->validateBeforeEach(...),
+            AfterAll::class => $this->validateAfterAll(...),
+            AfterEach::class => $this->validateAfterEach(...),
+            BeforeEachTest::class => $this->validateBeforeEachTest(...),
+            AfterEachTest::class => $this->validateAfterEachTest(...)
         ];
         foreach ($validAttributes as $validAttribute => $validator) {
             $attribute = $this->findAttribute($validAttribute, ...$classMethod->attrGroups);
@@ -121,187 +105,196 @@ final class AsyncUnitModelNodeVisitor extends NodeVisitorAbstract implements Nod
                     );
                     throw new TestCompilationException($msg);
                 }
-                $validator($attribute);
+
+                $reflectionMethod = new ReflectionMethod($className, $classMethod->name->toString());
+                $validator($reflectionMethod);
             }
         }
     }
 
-    private function validateTest(Node\Stmt\ClassMethod $classMethod) : void {
-        $className = $classMethod->getAttribute('parent')->namespacedName->toString();
+    private function validateTest(ReflectionMethod $reflectionMethod) : void {
+        $className = $reflectionMethod->class;
         if (!is_subclass_of($className, TestCase::class)) {
             $msg = sprintf(
                 'Failure compiling "%s". The method "%s" is annotated with #[Test] but this class does not extend "%s".',
                 $className,
-                $classMethod->name->toString(),
+                $reflectionMethod->name,
                 TestCase::class
             );
             throw new TestCompilationException($msg);
         }
 
-        $testModel = new TestModel((string) $className, $classMethod->name->toString());
-        if ($disabledAttribute = $this->findAttribute(Disabled::class, ...$classMethod->attrGroups)) {
-            $reason = null;
-            if (count($disabledAttribute->args) === 1) {
-                // TODO Make sure that the disabled value is a string, otherwise throw an error
-                $reason = $disabledAttribute->args[0]->value->value;
-            }
-            $testModel->markDisabled($reason);
+        $testModel = new TestModel($className, $reflectionMethod->name);
+
+        $disabledAttributes = $reflectionMethod->getAttributes(Disabled::class);
+        if (count($disabledAttributes) === 1) {
+            $testModel->markDisabled($disabledAttributes[0]->newInstance()->reason);
         }
-        $dataProviderAttribute = $this->findAttribute(DataProvider::class, ...$classMethod->attrGroups);
-        if (!is_null($dataProviderAttribute)) {
-            // TODO Make sure that the data provider value is a string, otherwise throw an error
-            $testModel->setDataProvider($dataProviderAttribute->args[0]->value->value);
+        $dataProviderAttributes = $reflectionMethod->getAttributes(DataProvider::class);
+        if (count($dataProviderAttributes) === 1) {
+            $testModel->setDataProvider($dataProviderAttributes[0]->newInstance()->methodName);
         }
-        if ($timeoutAttribute = $this->findAttribute(Timeout::class, ...$classMethod->attrGroups)) {
-            $value = $timeoutAttribute->args[0]->value->value;
-            $testModel->setTimeout($value);
+        $timeoutAttributes = $reflectionMethod->getAttributes(Timeout::class);
+        if (count($timeoutAttributes) === 1) {
+            $testModel->setTimeout($timeoutAttributes[0]->newInstance()->timeoutInMilliseconds);
         }
 
         $this->collector->attachTest($testModel);
     }
 
-    private function validateBeforeEach(Node\Attribute $attribute, Node\Stmt\ClassMethod $classMethod) : void {
-        $className = $classMethod->getAttribute('parent')->namespacedName->toString();
+    private function validateBeforeEach(ReflectionMethod $reflectionMethod) : void {
+        $className = $reflectionMethod->class;
         if (!is_subclass_of($className, TestSuite::class) && !is_subclass_of($className, TestCase::class)) {
             $msg = sprintf(
                 'Failure compiling "%s". The method "%s" is annotated with #[BeforeEach] but this class does not extend "%s" or "%s".',
                 $className,
-                $classMethod->name->toString(),
+                $reflectionMethod->name,
                 TestSuite::class,
                 TestCase::class
             );
             throw new TestCompilationException($msg);
         }
 
+        $beforeEachAttributes = $reflectionMethod->getAttributes(BeforeEach::class);
+        assert($beforeEachAttributes !== []);
+
         $this->collector->attachHook(
             new HookModel(
-                (string) $className,
-                $classMethod->name->toString(),
+                $className,
+                $reflectionMethod->name,
                 HookType::BeforeEach,
-                $this->getPriority($attribute)
+                $beforeEachAttributes[0]->newInstance()->priority
             )
         );
     }
 
-    private function validateAfterEach(Node\Attribute $attribute, Node\Stmt\ClassMethod $classMethod) : void {
-        $className = $classMethod->getAttribute('parent')->namespacedName->toString();
+    private function validateAfterEach(ReflectionMethod $reflectionMethod) : void {
+        $className = $reflectionMethod->class;
         if (!is_subclass_of($className, TestSuite::class) && !is_subclass_of($className, TestCase::class)) {
             $msg = sprintf(
                 'Failure compiling "%s". The method "%s" is annotated with #[AfterEach] but this class does not extend "%s" or "%s".',
                 $className,
-                $classMethod->name->toString(),
+                $reflectionMethod->name,
                 TestSuite::class,
                 TestCase::class
             );
             throw new TestCompilationException($msg);
         }
 
+        $afterEachAttributes = $reflectionMethod->getAttributes(AfterEach::class);
+        assert($afterEachAttributes !== []);
+
         $this->collector->attachHook(
             new HookModel(
-                (string) $className,
-                $classMethod->name->toString(),
+                $className,
+                $reflectionMethod->name,
                 HookType::AfterEach,
-                $this->getPriority($attribute)
+                $afterEachAttributes[0]->newInstance()->priority
             )
         );
     }
 
-    private function validateBeforeAll(Node\Attribute $attribute, Node\Stmt\ClassMethod $classMethod) : void {
-        $className = $classMethod->getAttribute('parent')->namespacedName->toString();
+    private function validateBeforeAll(ReflectionMethod $reflectionMethod) : void {
+        $className = $reflectionMethod->class;
         if (!is_subclass_of($className, TestSuite::class) && !is_subclass_of($className, TestCase::class)) {
             $msg = sprintf(
                 'Failure compiling "%s". The method "%s" is annotated with #[BeforeAll] but this class does not extend "%s" or "%s".',
                 $className,
-                $classMethod->name->toString(),
+                $reflectionMethod->getName(),
                 TestSuite::class,
                 TestCase::class
             );
             throw new TestCompilationException($msg);
         } else if (is_subclass_of($className, TestCase::class)) {
-            if (!$classMethod->isStatic()) {
+            if (!$reflectionMethod->isStatic()) {
                 $msg = sprintf(
                     'Failure compiling "%s". The non-static method "%s" cannot be used as a #[BeforeAll] hook.',
-                    $classMethod->getAttribute('parent')->namespacedName->toString(),
-                    $classMethod->name->toString(),
+                    $className,
+                    $reflectionMethod->getName(),
                 );
                 throw new TestCompilationException($msg);
             }
         }
 
+        // We know there's an attribute here because we wouldn't call this method if the parser didn't know there
+        // was an attribute here
+        $beforeAllAttributes = $reflectionMethod->getAttributes(BeforeAll::class);
+        assert($beforeAllAttributes !== []);
 
         $this->collector->attachHook(
             new HookModel(
-                (string) $className,
-                $classMethod->name->toString(),
+                $className,
+                $reflectionMethod->getName(),
                 HookType::BeforeAll,
-                $this->getPriority($attribute)
+                $beforeAllAttributes[0]->newInstance()->priority
             )
         );
     }
 
-    private function validateAfterAll(Node\Attribute $attribute, Node\Stmt\ClassMethod $classMethod) : void {
-        $className = $classMethod->getAttribute('parent')->namespacedName->toString();
+    private function validateAfterAll(ReflectionMethod $reflectionMethod) : void {
+        $className = $reflectionMethod->class;
         if (!is_subclass_of($className, TestSuite::class) && !is_subclass_of($className, TestCase::class)) {
             $msg = sprintf(
                 'Failure compiling "%s". The method "%s" is annotated with #[AfterAll] but this class does not extend "%s" or "%s".',
                 $className,
-                $classMethod->name->toString(),
+                $reflectionMethod->name,
                 TestSuite::class,
                 TestCase::class
             );
             throw new TestCompilationException($msg);
         } else if (is_subclass_of($className, TestCase::class)) {
-            if (!$classMethod->isStatic()) {
+            if (!$reflectionMethod->isStatic()) {
                 $msg = sprintf(
                     'Failure compiling "%s". The non-static method "%s" cannot be used as a #[AfterAll] hook.',
-                    $classMethod->getAttribute('parent')->namespacedName->toString(),
-                    $classMethod->name->toString(),
+                    $className,
+                    $reflectionMethod->name,
                 );
                 throw new TestCompilationException($msg);
             }
         }
 
+        $afterAllAttributes = $reflectionMethod->getAttributes(AfterAll::class);
+        assert($afterAllAttributes !== []);
+
         $this->collector->attachHook(
             new HookModel(
                 $className,
-                $classMethod->name->toString(),
+                $reflectionMethod->name,
                 HookType::AfterAll,
-                $this->getPriority($attribute)
+                $afterAllAttributes[0]->newInstance()->priority
             )
         );
     }
 
-    private function validateBeforeEachTest(Node\Attribute $attribute, Node\Stmt\ClassMethod $classMethod) : void {
-        $className = $classMethod->getAttribute('parent')->namespacedName->toString();
+    private function validateBeforeEachTest(ReflectionMethod $reflectionMethod) : void {
+        $className = $reflectionMethod->class;
+
+        $beforeEachTestAttributes = $reflectionMethod->getAttributes(BeforeEachTest::class);
+        assert($beforeEachTestAttributes !== []);
+
         $this->collector->attachHook(
             new HookModel(
                 $className,
-                $classMethod->name->toString(),
+                $reflectionMethod->name,
                 HookType::BeforeEachTest,
-                $this->getPriority($attribute)
+                $beforeEachTestAttributes[0]->newInstance()->priority
             )
         );
     }
 
-    private function validateAfterEachTest(Node\Attribute $attribute, Node\Stmt\ClassMethod $classMethod) : void {
-        $className = $classMethod->getAttribute('parent')->namespacedName->toString();
+    private function validateAfterEachTest(ReflectionMethod $reflectionMethod) : void {
+        $className = $reflectionMethod->class;
+
+        $afterEachTestAttributes = $reflectionMethod->getAttributes(AfterEachTest::class);
+        assert($afterEachTestAttributes !== []);
+
         $this->collector->attachHook(
             new HookModel(
                 $className,
-                $classMethod->name->toString(),
+                $reflectionMethod->name,
                 HookType::AfterEachTest,
-                $this->getPriority($attribute)
+                $afterEachTestAttributes[0]->newInstance()->priority
             )
         );
-    }
-
-    private function getPriority(Node\Attribute $attribute) : int {
-        $priority = 0;
-        if (count($attribute->args) === 1) {
-            // TODO make sure this is an integer value
-            $priority = $attribute->args[0]->value->value;
-        }
-
-        return $priority;
     }
 }

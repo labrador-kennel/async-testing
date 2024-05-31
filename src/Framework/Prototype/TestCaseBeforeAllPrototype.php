@@ -3,8 +3,7 @@
 
 namespace Labrador\AsyncUnit\Framework\Prototype;
 
-use Amp\Coroutine;
-use Amp\Promise;
+use Amp\Future;
 use Labrador\AsyncUnit\Framework\Attribute\BeforeAll;
 use Labrador\AsyncUnit\Framework\Attribute\Prototype;
 use Labrador\AsyncUnit\Framework\Attribute\PrototypeRequiresAttribute;
@@ -15,6 +14,6 @@ use Labrador\AsyncUnit\Framework\TestSuite;
 #[PrototypeRequiresAttribute(BeforeAll::class)]
 interface TestCaseBeforeAllPrototype {
 
-    public static function beforeAll(TestSuite $testSuite) : Promise|\Generator|Coroutine|null;
+    public static function beforeAll(TestSuite $testSuite) : Future|null;
 
 }

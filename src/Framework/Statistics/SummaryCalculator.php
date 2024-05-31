@@ -11,7 +11,7 @@ use Labrador\AsyncUnit\Framework\Parser\ParserResult;
 final class SummaryCalculator {
 
     private array $modelRelationships = [];
-    private AggregateSummary $aggregateSummary;
+    private readonly AggregateSummary $aggregateSummary;
 
     private int $testSuiteCount = 0;
     private int $disabledTestSuiteCount = 0;
@@ -24,9 +24,10 @@ final class SummaryCalculator {
 
     public function __construct(private ParserResult $parserResult) {
         $this->calculateModelRelationships($this->parserResult);
+        $this->aggregateSummary = $this->constructAggregateSummary();
     }
 
-    private function calculateModelRelationships(ParserResult $parserResult) {
+    private function calculateModelRelationships(ParserResult $parserResult): void {
         foreach ($parserResult->getTestSuiteModels() as $testSuiteModel) {
             $testSuite = $testSuiteModel->getClass();
             $this->testSuiteCount++;
@@ -65,10 +66,6 @@ final class SummaryCalculator {
     }
 
     public function getAggregateSummary() : AggregateSummary {
-        if (!isset($this->aggregateSummary)) {
-            $this->aggregateSummary = $this->constructAggregateSummary();
-        }
-
         return $this->aggregateSummary;
     }
 

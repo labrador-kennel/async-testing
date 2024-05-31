@@ -12,9 +12,11 @@ use Labrador\AsyncEvent\Listener;
 use Labrador\AsyncUnit\Framework\AsyncUnitApplication;
 use Labrador\AsyncUnit\Framework\Event\Events;
 use Labrador\AsyncUnit\Framework\Event\ProcessingFinishedEvent;
+use Labrador\AsyncUnit\Framework\Event\ProcessingStartedEvent;
 use Labrador\AsyncUnit\Framework\Event\TestDisabledEvent;
 use Labrador\AsyncUnit\Framework\Event\TestErroredEvent;
 use Labrador\AsyncUnit\Framework\Event\TestFailedEvent;
+use Labrador\AsyncUnit\Framework\Event\TestPassedEvent;
 use Labrador\AsyncUnit\Framework\Exception\AssertionFailedException;
 use Labrador\AsyncUnit\Framework\Exception\TestFailedException;
 use Labrador\AsyncUnit\Framework\ResultPrinter;
@@ -24,22 +26,29 @@ use SebastianBergmann\Timer\ResourceUsageFormatter;
 final class TerminalResultPrinter implements ResultPrinter {
 
     /**
-     * @var TestFailedEvent[]
+     * @var list<TestFailedEvent>
      */
     private array $failedTests = [];
 
     /**
-     * @var TestDisabledEvent[]
+     * @var list<TestDisabledEvent>
      */
     private array $disabledTests = [];
 
     /**
-     * @var TestErroredEvent[]
+     * @var list<TestErroredEvent>
      */
     private array $erroredTests = [];
 
+    /**
+     * @template Payload of object
+     * @param WritableStream $output
+     * @param Closure(Event<Payload>):void $closure
+     * @return Listener<Event<Payload>>
+     */
     private function createClosureInvokingListener(WritableStream $output, Closure $closure) : Listener {
-        return new class($output, $closure) implements Listener{
+        /** @implements Listener<Event<Payload>> */
+        return new class($output, $closure) implements Listener {
             public function __construct(
                 private readonly WritableStream $output,
                 private readonly Closure $closure
@@ -52,35 +61,35 @@ final class TerminalResultPrinter implements ResultPrinter {
         };
     }
 
-    public function registerEvents(Emitter $emitter, WritableStream $output) : void {
-        $output = new TerminalOutputStream($output);
+    public function registerEvents(Emitter $emitter, WritableStream $writableStream) : void {
+        $writableStream = new TerminalOutputStream($writableStream);
         $emitter->register(
             Events::PROCESSING_STARTED,
-            $this->createClosureInvokingListener($output, $this->testProcessingStarted(...))
+            $this->createClosureInvokingListener($writableStream, $this->testProcessingStarted(...))
         );
         $emitter->register(
             Events::TEST_PASSED,
-            $this->createClosureInvokingListener($output, $this->testPassed(...))
+            $this->createClosureInvokingListener($writableStream, $this->testPassed(...))
         );
         $emitter->register(
             Events::TEST_FAILED,
-            $this->createClosureInvokingListener($output, $this->testFailed(...))
+            $this->createClosureInvokingListener($writableStream, $this->testFailed(...))
         );
         $emitter->register(
             Events::TEST_DISABLED,
-            $this->createClosureInvokingListener($output, $this->testDisabled(...))
+            $this->createClosureInvokingListener($writableStream, $this->testDisabled(...))
         );
         $emitter->register(
             Events::TEST_ERRORED,
-            $this->createClosureInvokingListener($output, $this->testErrored(...))
+            $this->createClosureInvokingListener($writableStream, $this->testErrored(...))
         );
         $emitter->register(
             Events::PROCESSING_FINISHED,
-            $this->createClosureInvokingListener($output, $this->testProcessingFinished(...))
+            $this->createClosureInvokingListener($writableStream, $this->testProcessingFinished(...))
         );
     }
 
-    private function testProcessingStarted(Event $_, WritableStream $output) : void {
+    private function testProcessingStarted(ProcessingStartedEvent $_, WritableStream $output) : void {
         $inspirationalMessages = [
             'Let\'s run some asynchronous tests!',
             'Zoom, zoom... here we go!',
@@ -92,7 +101,7 @@ final class TerminalResultPrinter implements ResultPrinter {
         $output->write(sprintf("Runtime: PHP %s\n", phpversion()));
     }
 
-    private function testPassed(Event $event, WritableStream $output) : void {
+    private function testPassed(TestPassedEvent $_, WritableStream $output) : void {
         $output->write('.');
     }
 
@@ -132,11 +141,10 @@ final class TerminalResultPrinter implements ResultPrinter {
             $output->br();
             $output->writeln('ERRORS');
             $output->writeln(sprintf(
-                'Tests: %d, Errors: %d, Assertions: %d, Async Assertions: %d',
+                'Tests: %d, Errors: %d, Assertions: %d',
                 $event->payload()->getTotalTestCount(),
                 $event->payload()->getErroredTestCount(),
                 $event->payload()->getAssertionCount(),
-                $event->payload()->getAsyncAssertionCount()
             ));
         }
 
@@ -155,8 +163,8 @@ final class TerminalResultPrinter implements ResultPrinter {
                     $output->br();
                     $output->writeln(sprintf(
                         "%s:%d",
-                        $exception->getAssertionFailureFile(),
-                        $exception->getAssertionFailureLine()
+                        $exception->getFile(),
+                        $exception->getLine()
                     ));
                     $output->br();
                 } else if ($exception instanceof TestFailedException) {
@@ -184,11 +192,10 @@ final class TerminalResultPrinter implements ResultPrinter {
 
             $output->write("FAILURES\n");
             $output->write(sprintf(
-                "Tests: %d, Failures: %d, Assertions: %d, Async Assertions: %d\n",
+                "Tests: %d, Failures: %d, Assertions: %d\n",
                 $event->payload()->getTotalTestCount(),
                 $event->payload()->getFailedTestCount(),
                 $event->payload()->getAssertionCount(),
-                $event->payload()->getAsyncAssertionCount()
             ));
         }
 
@@ -205,21 +212,19 @@ final class TerminalResultPrinter implements ResultPrinter {
             }
             $output->write("\n");
             $output->write(sprintf(
-                "Tests: %d, Disabled Tests: %d, Assertions: %d, Async Assertions: %d\n",
+                "Tests: %d, Disabled Tests: %d, Assertions: %d\n",
                 $event->payload()->getTotalTestCount(),
                 $event->payload()->getDisabledTestCount(),
                 $event->payload()->getAssertionCount(),
-                $event->payload()->getAsyncAssertionCount()
             ));
         }
 
         if ($event->payload()->getTotalTestCount() === $event->payload()->getPassedTestCount()) {
             $output->write("OK!\n");
             $output->write(sprintf(
-                "Tests: %d, Assertions: %d, Async Assertions: %d\n",
+                "Tests: %d, Assertions: %d\n",
                 $event->payload()->getTotalTestCount(),
                 $event->payload()->getAssertionCount(),
-                $event->payload()->getAsyncAssertionCount()
             ));
         }
     }

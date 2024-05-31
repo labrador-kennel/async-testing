@@ -37,12 +37,16 @@ final class ExpectationContext implements TestExpector {
         $this->thrownException = $throwable;
     }
 
-    public function exception(string $exceptionClass) : void {
-        $this->expectedExceptionClass = $exceptionClass;
+    /**
+     * @param class-string<Throwable> $type
+     * @return void
+     */
+    public function exception(string $type) : void {
+        $this->expectedExceptionClass = $type;
     }
 
-    public function exceptionMessage(string $exceptionMessage) : void {
-        $this->expectedExceptionMessage = $exceptionMessage;
+    public function exceptionMessage(string $message) : void {
+        $this->expectedExceptionMessage = $message;
     }
 
     public function noAssertions() : void {

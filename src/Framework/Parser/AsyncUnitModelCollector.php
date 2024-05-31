@@ -4,7 +4,6 @@ namespace Labrador\AsyncUnit\Framework\Parser;
 
 use Labrador\AsyncUnit\Framework\Exception\TestCompilationException;
 use Labrador\AsyncUnit\Framework\Model\HookModel;
-use Labrador\AsyncUnit\Framework\Model\PluginModel;
 use Labrador\AsyncUnit\Framework\Model\TestCaseModel;
 use Labrador\AsyncUnit\Framework\Model\TestModel;
 use Labrador\AsyncUnit\Framework\Model\TestSuiteModel;
@@ -37,11 +36,6 @@ final class AsyncUnitModelCollector {
      */
     private array $hookModels = [];
 
-    /**
-     * @var PluginModel[]
-     */
-    private array $pluginModels= [];
-
     public function attachTestSuite(TestSuiteModel $testSuiteModel) : void {
         if ($testSuiteModel->isDefaultTestSuite()) {
             $this->defaultTestSuite = $testSuiteModel->getClass();
@@ -61,10 +55,6 @@ final class AsyncUnitModelCollector {
         $this->hookModels[] = $hookModel;
     }
 
-    public function attachPlugin(PluginModel $pluginModel) : void {
-        $this->pluginModels[] = $pluginModel;
-    }
-
     public function hasDefaultTestSuite() : bool {
         return isset($this->defaultTestSuite);
     }
@@ -74,10 +64,6 @@ final class AsyncUnitModelCollector {
      */
     public function getTestSuiteModels() : array {
         return array_values($this->testSuiteModels);
-    }
-
-    public function getPluginModels() : array {
-        return $this->pluginModels;
     }
 
     public function finishedCollection() : void {

@@ -12,6 +12,6 @@ use Attribute;
 #[Attribute(Attribute::TARGET_CLASS)]
 final class AttachToTestSuite {
 
-    public function __construct(private string $testSuiteClass) {}
+    public function __construct(public readonly string $testSuiteClass) {}
 
 }

@@ -16,7 +16,7 @@ class FailingMockBridgeStub implements MockBridge {
         throw new MockFailureException('Thrown from the FailingMockBridgeStub');
     }
 
-    public function createMock(string $class): object {
+    public function createMock(string $type): object {
         return new \stdClass();
     }
 

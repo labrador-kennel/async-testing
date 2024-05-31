@@ -26,19 +26,15 @@ final class AsyncUnitConfigurationValidator implements ConfigurationValidator {
     private function validateTestDirectories(Configuration $configuration) : array {
         $errors = [];
         $testDirs = $configuration->getTestDirectories();
-        if (empty($testDirs)) {
-            $errors['testDirectories'] = ['Must provide at least one directory to scan but none were provided.'];
-        } else {
-            foreach ($testDirs as $testDir) {
-                if (!$this->filesystem->isDirectory($testDir)) {
-                    if (!isset($errors['testDirectories'])) {
-                        $errors['testDirectories'] = [];
-                    }
-                    $errors['testDirectories'][] = sprintf(
-                        'A configured directory to scan, "%s", is not a directory.',
-                        $testDir
-                    );
+        foreach ($testDirs as $testDir) {
+            if (!$this->filesystem->isDirectory($testDir)) {
+                if (!isset($errors['testDirectories'])) {
+                    $errors['testDirectories'] = [];
                 }
+                $errors['testDirectories'][] = sprintf(
+                    'A configured directory to scan, "%s", is not a directory.',
+                    $testDir
+                );
             }
         }
 

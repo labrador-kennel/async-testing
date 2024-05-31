@@ -9,7 +9,7 @@
     "amphp/amp": "^3",
     "amphp/byte-stream": "^v2.0",
     "amphp/file": "^3.0",
-    "labrador-kennel/async-event": "^4.0",
+    "labrador-kennel/async-event": "^4.1",
     "cspray/labrador-styled-byte-stream": "^0.2",
     "opis/json-schema": "^2.0",
     "nikic/php-parser": "^4.10",

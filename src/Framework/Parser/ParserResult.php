@@ -2,7 +2,6 @@
 
 namespace Labrador\AsyncUnit\Framework\Parser;
 
-use Labrador\AsyncUnit\Framework\Model\PluginModel;
 use Labrador\AsyncUnit\Framework\Model\TestSuiteModel;
 use Labrador\AsyncUnit\Framework\Statistics\AggregateSummary;
 use Labrador\AsyncUnit\Framework\Statistics\SummaryCalculator;
@@ -11,22 +10,17 @@ use Labrador\AsyncUnit\Framework\Statistics\TestSuiteSummary;
 
 final class ParserResult {
 
-    private SummaryCalculator $summaryCalculator;
+    private readonly SummaryCalculator $summaryCalculator;
 
-    public function __construct(private AsyncUnitModelCollector $collector) {}
+    public function __construct(private AsyncUnitModelCollector $collector) {
+        $this->summaryCalculator = new SummaryCalculator($this);
+    }
 
     /**
      * @return list<TestSuiteModel>
      */
     public function getTestSuiteModels() : array {
         return $this->collector->getTestSuiteModels();
-    }
-
-    /**
-     * @return PluginModel[]
-     */
-    public function getPluginModels() : array {
-        return $this->collector->getPluginModels();
     }
 
     public function getAggregateSummary() : AggregateSummary {
@@ -42,9 +36,6 @@ final class ParserResult {
     }
 
     private function getSummaryCalculator() : SummaryCalculator {
-        if (!isset($this->summaryCalculator)) {
-            $this->summaryCalculator = new SummaryCalculator($this);
-        }
         return $this->summaryCalculator;
     }
 

@@ -169,6 +169,11 @@ final class TestSuiteRunner {
         );
     }
 
+    /**
+     * @param class-string<Throwable> $exceptionType
+     * @param list<mixed> $args
+     * @throws Throwable
+     */
     private function invokeHooks(
         TestSuite|TestCase|string $hookTarget,
         TestSuiteModel|TestCaseModel $model,
@@ -238,9 +243,11 @@ final class TestSuiteRunner {
         $failureException = null;
         $timer = new Timer();
         $timer->start();
+        /** @var string|null $timeoutWatcherId */
         $timeoutWatcherId = null;
         if (!is_null($testModel->getTimeout())) {
             $timeoutWatcherId = EventLoop::delay($testModel->getTimeout() / 1000, static function() use(&$timeoutWatcherId, $testModel) {
+                assert($timeoutWatcherId !== null);
                 EventLoop::cancel($timeoutWatcherId);
                 $msg = sprintf(
                     'Expected %s::%s to complete within %sms',

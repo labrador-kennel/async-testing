@@ -22,19 +22,6 @@ class AsyncUnitConfigurationValidatorTest extends PHPUnitTestCase {
         $this->testConfiguration = new TestConfiguration();
     }
 
-    public function testEmptyTestDirectoriesIsInvalid() {
-        $this->testConfiguration->setTestDirectories([]);
-        $results = $this->subject->validate($this->testConfiguration);
-
-        $this->assertInstanceOf(ConfigurationValidationResults::class, $results);
-        $this->assertFalse($results->isValid());
-        $this->assertArrayHasKey('testDirectories', $results->getValidationErrors());
-        $this->assertSame(
-            ['Must provide at least one directory to scan but none were provided.'],
-            $results->getValidationErrors()['testDirectories']
-        );
-    }
-
     public function testNonDirectoriesIsInvalid() {
         $this->testConfiguration->setTestDirectories([
             __DIR__,

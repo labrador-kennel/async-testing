@@ -200,7 +200,6 @@ class AsyncUnitApplicationTest extends TestCase {
         $expectedMessage = <<<'msg'
 The configuration at path "invalidConfig" has the following errors:
 
-- Must provide at least one directory to scan but none were provided.
 - The result printer "Not a class" is not a class that can be found. Please ensure this class is configured to be autoloaded through Composer.
 
 Please fix the errors listed above and try running your tests again.

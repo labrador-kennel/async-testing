@@ -24,8 +24,8 @@ final class MockeryMockBridge implements MockBridge {
         }
     }
 
-    public function createMock(string $class) : MockInterface|LegacyMockInterface {
-        $mock = Mockery::mock($class);
+    public function createMock(string $type) : MockInterface|LegacyMockInterface {
+        $mock = Mockery::mock($type);
         $this->createdMocks[] = $mock;
         return $mock;
     }

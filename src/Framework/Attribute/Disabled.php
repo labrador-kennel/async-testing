@@ -10,6 +10,6 @@ namespace Labrador\AsyncUnit\Framework\Attribute;
 #[\Attribute(\Attribute::TARGET_METHOD | \Attribute::TARGET_CLASS)]
 class Disabled {
 
-    public function __construct(private ?string $reason = null) {}
+    public function __construct(public readonly ?string $reason = null) {}
 
 }

@@ -31,8 +31,8 @@ final class ProphecyMockBridge implements MockBridge {
         }
     }
 
-    public function createMock(string $class) : ObjectProphecy {
-        return $this->prophet->prophesize($class);
+    public function createMock(string $type) : ObjectProphecy {
+        return $this->prophet->prophesize($type);
     }
 
     public function getAssertionCount(): int {

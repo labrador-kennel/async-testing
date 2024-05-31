@@ -7,6 +7,6 @@ use Attribute;
 #[Attribute(Attribute::TARGET_METHOD)]
 final class BeforeEach {
 
-    public function __construct(private int $priority = 0) {}
+    public function __construct(public readonly int $priority = 0) {}
 
 }
