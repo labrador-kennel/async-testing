@@ -17,11 +17,11 @@ use Labrador\AsyncUnit\Framework\Event\TestErroredEvent;
 use Labrador\AsyncUnit\Framework\Event\TestFailedEvent;
 use Labrador\AsyncUnit\Framework\Exception\AssertionFailedException;
 use Labrador\AsyncUnit\Framework\Exception\TestFailedException;
-use Labrador\AsyncUnit\Framework\Plugin\ResultPrinterPlugin;
+use Labrador\AsyncUnit\Framework\ResultPrinter;
 use Labrador\CompositeFuture\CompositeFuture;
 use SebastianBergmann\Timer\ResourceUsageFormatter;
 
-final class TerminalResultPrinter implements ResultPrinterPlugin {
+final class TerminalResultPrinter implements ResultPrinter {
 
     /**
      * @var TestFailedEvent[]

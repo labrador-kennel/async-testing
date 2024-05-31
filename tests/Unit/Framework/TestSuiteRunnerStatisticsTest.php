@@ -6,7 +6,6 @@ namespace Labrador\AsyncUnit\Test\Unit\Framework;
 use Acme\DemoSuites\ExplicitTestSuite;
 use Acme\DemoSuites\ImplicitDefaultTestSuite;
 use Amp\Future;
-use Labrador\AsyncEvent\AbstractListener;
 use Labrador\AsyncEvent\Event;
 use Labrador\AsyncEvent\Listener;
 use Labrador\AsyncUnit\Framework\Event\Events;
@@ -18,6 +17,7 @@ use Labrador\AsyncUnit\Framework\ImplicitTestSuite;
 use Labrador\AsyncUnit\Framework\MockBridge\MockeryMockBridge;
 use Labrador\AsyncUnit\Framework\Statistics\AggregateSummary;
 use Labrador\CompositeFuture\CompositeFuture;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase as PHPUnitTestCase;
 
 class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
@@ -56,18 +56,16 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
         $this->assertInstanceOf(AggregateSummary::class, $testStartedEvent->payload());
     }
 
-    public function processedAggregateSummaryTestSuiteInfoProvider() : array {
+    public static function processedAggregateSummaryTestSuiteInfoProvider() : array {
         return [
-            [$this->implicitDefaultTestSuitePath('SingleTest'), [ImplicitTestSuite::class]],
-            [$this->implicitDefaultTestSuitePath('KitchenSink'), [
+            'SingleTest' => [self::implicitDefaultTestSuitePath('SingleTest'), [ImplicitTestSuite::class]],
+            'KitchenSink' => [self::implicitDefaultTestSuitePath('KitchenSink'), [
                 ImplicitTestSuite::class, ImplicitDefaultTestSuite\KitchenSink\FirstTestSuite::class, ImplicitDefaultTestSuite\KitchenSink\WhatAbout\PotatoTestSuite::class
             ]]
         ];
     }
 
-    /**
-     * @dataProvider processedAggregateSummaryTestSuiteInfoProvider
-     */
+    #[DataProvider('processedAggregateSummaryTestSuiteInfoProvider')]
     public function testTestProcessingFinishedHasProcessedAggregateSummaryWithCorrectTestSuiteNames(string $path, array $expected) {
         $results = $this->parser->parse($path);
         $listener = $this->createEventRecordingListener();
@@ -88,16 +86,14 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
         );
     }
 
-    public function processedAggregateSummaryWithCorrectTotalTestSuiteCountProvider() : array {
+    public static function processedAggregateSummaryWithCorrectTotalTestSuiteCountProvider() : array {
         return [
-            [$this->implicitDefaultTestSuitePath('SingleTest'), 1],
-            [$this->implicitDefaultTestSuitePath('KitchenSink'), 3]
+            'SingleTest' => [self::implicitDefaultTestSuitePath('SingleTest'), 1],
+            'KitchenSink' => [self::implicitDefaultTestSuitePath('KitchenSink'), 3]
         ];
     }
 
-    /**
-     * @dataProvider processedAggregateSummaryWithCorrectTotalTestSuiteCountProvider
-     */
+    #[DataProvider('processedAggregateSummaryWithCorrectTotalTestSuiteCountProvider')]
     public function testProcessedAggregateSummaryWithCorrectTotalTestSuiteCount(string $path, int $expected) : void {
         $results = $this->parser->parse($path);
         $listener = $this->createEventRecordingListener();
@@ -113,17 +109,15 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
     }
 
 
-    public function processedAggregateSummaryWithCorrectDisabledTestSuiteCountProvider() : array {
+    public static function processedAggregateSummaryWithCorrectDisabledTestSuiteCountProvider() : array {
         return [
-            [$this->implicitDefaultTestSuitePath('SingleTest'), 0],
-            [$this->implicitDefaultTestSuitePath('KitchenSink'), 0],
-            [$this->explicitTestSuitePath('TestSuiteDisabled'), 1]
+            'SingleTest' => [self::implicitDefaultTestSuitePath('SingleTest'), 0],
+            'KitchenSink' => [self::implicitDefaultTestSuitePath('KitchenSink'), 0],
+            'TestSuiteDisabled' => [self::explicitTestSuitePath('TestSuiteDisabled'), 1]
         ];
     }
 
-    /**
-     * @dataProvider processedAggregateSummaryWithCorrectDisabledTestSuiteCountProvider
-     */
+    #[DataProvider('processedAggregateSummaryWithCorrectDisabledTestSuiteCountProvider')]
     public function testProcessedAggregateSummaryWithCorrectDisabledTestSuiteCount(string $path, int $expected) : void {
         $results = $this->parser->parse($path);
         $listener = $this->createEventRecordingListener();
@@ -137,17 +131,15 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
         $this->assertSame($expected, $testFinishedEvent->payload()->getDisabledTestSuiteCount());
     }
 
-    public function processedAggregateSummaryWithCorrectTotalTestCaseCountProvider() : array {
+    public static function processedAggregateSummaryWithCorrectTotalTestCaseCountProvider() : array {
         return [
-            [$this->implicitDefaultTestSuitePath('SingleTest'), 1],
-            [$this->implicitDefaultTestSuitePath('KitchenSink'), 7],
-            [$this->explicitTestSuitePath('TestSuiteDisabled'), 2]
+            'SingleTest' => [self::implicitDefaultTestSuitePath('SingleTest'), 1],
+            'KitchenSink' => [self::implicitDefaultTestSuitePath('KitchenSink'), 7],
+            'TestSuiteDisabled' => [self::explicitTestSuitePath('TestSuiteDisabled'), 2]
         ];
     }
 
-    /**
-     * @dataProvider processedAggregateSummaryWithCorrectTotalTestCaseCountProvider
-     */
+    #[DataProvider('processedAggregateSummaryWithCorrectTotalTestCaseCountProvider')]
     public function testProcessedAggregateSummaryWithCorrectTotalTestCaseCount(string $path, int $expected) : void {
         $results = $this->parser->parse($path);
         $listener = $this->createEventRecordingListener();
@@ -161,18 +153,16 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
         $this->assertSame($expected, $testFinishedEvent->payload()->getTotalTestCaseCount());
     }
 
-    public function processedAggregateSummaryWithCorrectDisabledTestCaseCountProvider() : array {
+    public static function processedAggregateSummaryWithCorrectDisabledTestCaseCountProvider() : array {
         return [
-            [$this->implicitDefaultTestSuitePath('SingleTest'), 0],
-            [$this->implicitDefaultTestSuitePath('KitchenSink'), 0],
-            [$this->explicitTestSuitePath('TestSuiteDisabled'), 2],
-            [$this->implicitDefaultTestSuitePath('TestCaseDisabled'), 1]
+            'SingleTest' => [self::implicitDefaultTestSuitePath('SingleTest'), 0],
+            'KitchenSink' => [self::implicitDefaultTestSuitePath('KitchenSink'), 0],
+            'TestSuiteDisabled' => [self::explicitTestSuitePath('TestSuiteDisabled'), 2],
+            'TestCaseDisabled' => [self::implicitDefaultTestSuitePath('TestCaseDisabled'), 1]
         ];
     }
 
-    /**
-     * @dataProvider processedAggregateSummaryWithCorrectDisabledTestCaseCountProvider
-     */
+    #[DataProvider('processedAggregateSummaryWithCorrectDisabledTestCaseCountProvider')]
     public function testProcessedAggregateSummaryWithCorrectDisabledTestCaseCount(string $path, int $expected) : void {
         $results = $this->parser->parse($path);
         $listener = $this->createEventRecordingListener();
@@ -187,19 +177,17 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
         $this->assertSame($expected, $testFinishedEvent->payload()->getDisabledTestCaseCount());
     }
 
-    public function processedAggregateSummaryWithCorrectTotalTestCountProvider() : array {
+    public static function processedAggregateSummaryWithCorrectTotalTestCountProvider() : array {
         return [
-            [$this->implicitDefaultTestSuitePath('SingleTest'), 1],
-            [$this->implicitDefaultTestSuitePath('KitchenSink'), 13],
-            [$this->explicitTestSuitePath('TestSuiteDisabled'), 3],
-            [$this->implicitDefaultTestSuitePath('TestCaseDisabled'), 3],
-            [$this->implicitDefaultTestSuitePath('ExceptionThrowingTest'), 1]
+            'SingleTest' => [self::implicitDefaultTestSuitePath('SingleTest'), 1],
+            'KitchenSink' => [self::implicitDefaultTestSuitePath('KitchenSink'), 13],
+            'TestSuiteDisabled' => [self::explicitTestSuitePath('TestSuiteDisabled'), 3],
+            'TestCaseDisabled' => [self::implicitDefaultTestSuitePath('TestCaseDisabled'), 3],
+            'ExceptionThrowingTest' => [self::implicitDefaultTestSuitePath('ExceptionThrowingTest'), 1]
         ];
     }
 
-    /**
-     * @dataProvider processedAggregateSummaryWithCorrectTotalTestCountProvider
-     */
+    #[DataProvider('processedAggregateSummaryWithCorrectTotalTestCountProvider')]
     public function testProcessedAggregateSummaryWithCorrectTotalTestCount(string $path, int $expected) : void {
         $results = $this->parser->parse($path);
         $listener = $this->createEventRecordingListener();
@@ -214,19 +202,17 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
         $this->assertSame($expected, $testFinishedEvent->payload()->getTotalTestCount());
     }
 
-    public function processedAggregateSummaryWithCorrectDisabledTestCountProvider() : array {
+    public static function processedAggregateSummaryWithCorrectDisabledTestCountProvider() : array {
         return [
-            [$this->implicitDefaultTestSuitePath('SingleTest'), 0],
-            [$this->implicitDefaultTestSuitePath('KitchenSink'), 3],
-            [$this->explicitTestSuitePath('TestSuiteDisabled'), 3],
-            [$this->implicitDefaultTestSuitePath('TestCaseDisabled'), 3],
-            [$this->implicitDefaultTestSuitePath('ExceptionThrowingTest'), 0]
+            'SingleTest' => [self::implicitDefaultTestSuitePath('SingleTest'), 0],
+            'KitchenSink' => [self::implicitDefaultTestSuitePath('KitchenSink'), 3],
+            'TestSuiteDisabled' => [self::explicitTestSuitePath('TestSuiteDisabled'), 3],
+            'TestCaseDisabled' => [self::implicitDefaultTestSuitePath('TestCaseDisabled'), 3],
+            'ExceptionThrowingTest' => [self::implicitDefaultTestSuitePath('ExceptionThrowingTest'), 0]
         ];
     }
 
-    /**
-     * @dataProvider processedAggregateSummaryWithCorrectDisabledTestCountProvider
-     */
+    #[DataProvider('processedAggregateSummaryWithCorrectDisabledTestCountProvider')]
     public function testProcessedAggregateSummaryWithCorrectDisabledTestCount(string $path, int $expected) : void {
         $results = $this->parser->parse($path);
         $listener = $this->createEventRecordingListener();
@@ -241,19 +227,17 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
         $this->assertSame($expected, $testFinishedEvent->payload()->getDisabledTestCount());
     }
 
-    public function processedAggregateSummaryWithCorrectPassedTestCountProvider() : array {
+    public static function processedAggregateSummaryWithCorrectPassedTestCountProvider() : array {
         return [
-            [$this->implicitDefaultTestSuitePath('SingleTest'), 1],
-            [$this->implicitDefaultTestSuitePath('KitchenSink'), 8],
-            [$this->explicitTestSuitePath('TestSuiteDisabled'), 0],
-            [$this->implicitDefaultTestSuitePath('TestCaseDisabled'), 0],
-            [$this->implicitDefaultTestSuitePath('ExceptionThrowingTest'), 0]
+            'SingleTest' => [self::implicitDefaultTestSuitePath('SingleTest'), 1],
+            'KitchenSink' => [self::implicitDefaultTestSuitePath('KitchenSink'), 8],
+            'TestSuiteDisabled' => [self::explicitTestSuitePath('TestSuiteDisabled'), 0],
+            'TestCaseDisabled' => [self::implicitDefaultTestSuitePath('TestCaseDisabled'), 0],
+            'ExceptionThrowingTest' => [self::implicitDefaultTestSuitePath('ExceptionThrowingTest'), 0]
         ];
     }
 
-    /**
-     * @dataProvider processedAggregateSummaryWithCorrectPassedTestCountProvider
-     */
+    #[DataProvider('processedAggregateSummaryWithCorrectPassedTestCountProvider')]
     public function testProcessedAggregateSummaryWithCorrectPassedTestCount(string $path, int $expected) : void {
         $results = $this->parser->parse($path);
         $listener = $this->createEventRecordingListener();
@@ -268,20 +252,18 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
         $this->assertSame($expected, $testFinishedEvent->payload()->getPassedTestCount());
     }
 
-    public function processedAggregateSummaryWithCorrectFailedTestCountProvider() : array {
+    public static function processedAggregateSummaryWithCorrectFailedTestCountProvider() : array {
         return [
-            [$this->implicitDefaultTestSuitePath('SingleTest'), 0],
-            [$this->implicitDefaultTestSuitePath('KitchenSink'), 1],
-            [$this->explicitTestSuitePath('TestSuiteDisabled'), 0],
-            [$this->implicitDefaultTestSuitePath('TestCaseDisabled'), 0],
-            [$this->implicitDefaultTestSuitePath('FailedAssertion'), 1],
-            [$this->implicitDefaultTestSuitePath('ExceptionThrowingTest'), 0]
+            'SingleTest' => [self::implicitDefaultTestSuitePath('SingleTest'), 0],
+            'KitchenSink' => [self::implicitDefaultTestSuitePath('KitchenSink'), 1],
+            'TestSuiteDisabled' => [self::explicitTestSuitePath('TestSuiteDisabled'), 0],
+            'TestCaseDisabled' => [self::implicitDefaultTestSuitePath('TestCaseDisabled'), 0],
+            'FailedAssertion' => [self::implicitDefaultTestSuitePath('FailedAssertion'), 1],
+            'ExceptionThrowingTest' => [self::implicitDefaultTestSuitePath('ExceptionThrowingTest'), 0]
         ];
     }
 
-    /**
-     * @dataProvider processedAggregateSummaryWithCorrectFailedTestCountProvider
-     */
+    #[DataProvider('processedAggregateSummaryWithCorrectFailedTestCountProvider')]
     public function testProcessedAggregateSummaryWithCorrectFailedTestCount(string $path, int $expected) : void {
         $results = $this->parser->parse($path);
         $listener = $this->createEventRecordingListener();
@@ -295,20 +277,18 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
         $this->assertSame($expected, $testFinishedEvent->payload()->getFailedTestCount());
     }
 
-    public function processedAggregateSummaryWithCorrectErroredTestCountProvider() : array {
+    public static function processedAggregateSummaryWithCorrectErroredTestCountProvider() : array {
         return [
-            [$this->implicitDefaultTestSuitePath('SingleTest'), 0],
-            [$this->implicitDefaultTestSuitePath('KitchenSink'), 1],
-            [$this->explicitTestSuitePath('TestSuiteDisabled'), 0],
-            [$this->implicitDefaultTestSuitePath('TestCaseDisabled'), 0],
-            [$this->implicitDefaultTestSuitePath('FailedAssertion'), 0],
-            [$this->implicitDefaultTestSuitePath('ExceptionThrowingTest'), 1]
+            'SingleTest' => [self::implicitDefaultTestSuitePath('SingleTest'), 0],
+            'KitchenSink' => [self::implicitDefaultTestSuitePath('KitchenSink'), 1],
+            'TestSuiteDisabled' => [self::explicitTestSuitePath('TestSuiteDisabled'), 0],
+            'TestCaseDisabled' => [self::implicitDefaultTestSuitePath('TestCaseDisabled'), 0],
+            'FailedAssertion' => [self::implicitDefaultTestSuitePath('FailedAssertion'), 0],
+            'ExceptionThrowingTest' => [self::implicitDefaultTestSuitePath('ExceptionThrowingTest'), 1]
         ];
     }
 
-    /**
-     * @dataProvider processedAggregateSummaryWithCorrectErroredTestCountProvider
-     */
+    #[DataProvider('processedAggregateSummaryWithCorrectErroredTestCountProvider')]
     public function testProcessedAggregateSummaryWithCorrectErroredTestCount(string $path, int $expected) : void {
         $results = $this->parser->parse($path);
         $listener = $this->createEventRecordingListener();
@@ -323,18 +303,16 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
         $this->assertSame($expected, $testFinishedEvent->payload()->getErroredTestCount());
     }
 
-    public function processedAggregateSummaryWithCorrectAssertionCountProvider() : array {
+    public static function processedAggregateSummaryWithCorrectAssertionCountProvider() : array {
         return [
-            'SingleTest' => [$this->implicitDefaultTestSuitePath('SingleTest'), 1],
-            'MultipleTest' => [$this->implicitDefaultTestSuitePath('MultipleTest'), 3],
-            'KitchenSink' => [$this->implicitDefaultTestSuitePath('KitchenSink'), 10],
-            'ExtendedTestCases' => [$this->implicitDefaultTestSuitePath('ExtendedTestCases'), 22]
+            'SingleTest' => [self::implicitDefaultTestSuitePath('SingleTest'), 1],
+            'MultipleTest' => [self::implicitDefaultTestSuitePath('MultipleTest'), 3],
+            'KitchenSink' => [self::implicitDefaultTestSuitePath('KitchenSink'), 10],
+            'ExtendedTestCases' => [self::implicitDefaultTestSuitePath('ExtendedTestCases'), 22]
         ];
     }
 
-    /**
-     * @dataProvider processedAggregateSummaryWithCorrectAssertionCountProvider
-     */
+    #[DataProvider('processedAggregateSummaryWithCorrectAssertionCountProvider')]
     public function testProcessedAggregateSummaryWithCorrectAssertionCount(string $path, int $expected) : void {
         $results = $this->parser->parse($path);
         $listener = $this->createEventRecordingListener();
@@ -349,10 +327,10 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
         $this->assertSame($expected, $testFinishedEvent->payload()->getAssertionCount());
     }
 
-    public function processedTestSuiteSummaryTestSuiteNameProvider() : array {
+    public static function processedTestSuiteSummaryTestSuiteNameProvider() : array {
         return [
-            'SingleTest' => [$this->implicitDefaultTestSuitePath('SingleTest'), [ImplicitTestSuite::class]],
-            'KitchenSink' => [$this->implicitDefaultTestSuitePath('KitchenSink'), [
+            'SingleTest' => [self::implicitDefaultTestSuitePath('SingleTest'), [ImplicitTestSuite::class]],
+            'KitchenSink' => [self::implicitDefaultTestSuitePath('KitchenSink'), [
                 ImplicitTestSuite::class,
                 ImplicitDefaultTestSuite\KitchenSink\FirstTestSuite::class,
                 ImplicitDefaultTestSuite\KitchenSink\WhatAbout\PotatoTestSuite::class
@@ -360,9 +338,7 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
         ];
     }
 
-    /**
-     * @dataProvider processedTestSuiteSummaryTestSuiteNameProvider
-     */
+    #[DataProvider('processedTestSuiteSummaryTestSuiteNameProvider')]
     public function testProcessedTestSuiteSummaryHasCorrectTestSuiteName(string $path, array $expected) : void {
         $results = $this->parser->parse($path);
         $listener = $this->createEventRecordingListener();
@@ -375,12 +351,12 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
         );
     }
 
-    public function processedTestSuiteSummaryTestCaseNamesProvider() : array {
+    public static function processedTestSuiteSummaryTestCaseNamesProvider() : array {
         return [
-            'SingleTest' => [$this->implicitDefaultTestSuitePath('SingleTest'), [
+            'SingleTest' => [self::implicitDefaultTestSuitePath('SingleTest'), [
                 ImplicitTestSuite::class => [ImplicitDefaultTestSuite\SingleTest\MyTestCase::class]
             ]],
-            'KitchenSink' => [$this->implicitDefaultTestSuitePath('KitchenSink'), [
+            'KitchenSink' => [self::implicitDefaultTestSuitePath('KitchenSink'), [
                 ImplicitDefaultTestSuite\KitchenSink\FirstTestSuite::class => [
                     ImplicitDefaultTestSuite\KitchenSink\FirstTestCase::class,
                     ImplicitDefaultTestSuite\KitchenSink\SecondTestCase::class,
@@ -395,7 +371,7 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
                     ImplicitDefaultTestSuite\KitchenSink\SecondBreakfast\BadTestCase::class
                 ]
             ]],
-            'TestSuiteDisabled' => [$this->explicitTestSuitePath('TestSuiteDisabled'), [
+            'TestSuiteDisabled' => [self::explicitTestSuitePath('TestSuiteDisabled'), [
                 ExplicitTestSuite\TestSuiteDisabled\MyTestSuite::class => [
                     ExplicitTestSuite\TestSuiteDisabled\FirstTestCase::class,
                     ExplicitTestSuite\TestSuiteDisabled\SecondTestCase::class
@@ -404,9 +380,7 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
         ];
     }
 
-    /**
-     * @dataProvider processedTestSuiteSummaryTestCaseNamesProvider
-     */
+    #[DataProvider('processedTestSuiteSummaryTestCaseNamesProvider')]
     public function testProcessedTestSuiteSummaryHasTestCaseNames(string $path, array $expected) : void {
             $results = $this->parser->parse($path);
             $listener = $this->createEventRecordingListener();
@@ -429,27 +403,25 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
             }
     }
 
-    public function processedTestSuiteSummaryTotalTestCaseCountProvider() : array {
+    public static function processedTestSuiteSummaryTotalTestCaseCountProvider() : array {
         return [
-            'SingleTest' => [$this->implicitDefaultTestSuitePath('SingleTest'), [
+            'SingleTest' => [self::implicitDefaultTestSuitePath('SingleTest'), [
                 ImplicitTestSuite::class => 1,
             ]],
-            'ExtendedTestCases' => [$this->implicitDefaultTestSuitePath('ExtendedTestCases'), [
+            'ExtendedTestCases' => [self::implicitDefaultTestSuitePath('ExtendedTestCases'), [
                 ImplicitTestSuite::class => 3
             ]],
-            'TestCaseDefinesTestSuite' => [$this->explicitTestSuitePath('TestCaseDefinesTestSuite'), [
+            'TestCaseDefinesTestSuite' => [self::explicitTestSuitePath('TestCaseDefinesTestSuite'), [
                 ExplicitTestSuite\TestCaseDefinesTestSuite\MyFirstTestSuite::class => 1,
                 ExplicitTestSuite\TestCaseDefinesTestSuite\MySecondTestSuite::class => 2
             ]],
-            'TestSuiteDisabled' => [$this->explicitTestSuitePath('TestSuiteDisabled'), [
+            'TestSuiteDisabled' => [self::explicitTestSuitePath('TestSuiteDisabled'), [
                 ExplicitTestSuite\TestSuiteDisabled\MyTestSuite::class => 2
             ]]
         ];
     }
 
-    /**
-     * @dataProvider processedTestSuiteSummaryTotalTestCaseCountProvider
-     */
+    #[DataProvider('processedTestSuiteSummaryTotalTestCaseCountProvider')]
     public function testProcessedTestSuiteSummaryHasTotalTestCaseCount(string $path, array $expected) : void {
         $results = $this->parser->parse($path);
         $listener = $this->createEventRecordingListener();
@@ -464,27 +436,25 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
         $this->assertEquals($expected, $actual);
     }
 
-    public function processedTestSuiteSummaryDisabledTestCaseCountProvider() : array {
+    public static function processedTestSuiteSummaryDisabledTestCaseCountProvider() : array {
         return [
-            'SingleTest' => [$this->implicitDefaultTestSuitePath('SingleTest'), [
+            'SingleTest' => [self::implicitDefaultTestSuitePath('SingleTest'), [
                 ImplicitTestSuite::class => 0,
             ]],
-            'TestCaseDisabled' => [$this->implicitDefaultTestSuitePath('TestCaseDisabled'), [
+            'TestCaseDisabled' => [self::implicitDefaultTestSuitePath('TestCaseDisabled'), [
                 ImplicitTestSuite::class => 1
             ]],
-            'TestCaseDefinesTestSuite' => [$this->explicitTestSuitePath('TestCaseDefinesTestSuite'), [
+            'TestCaseDefinesTestSuite' => [self::explicitTestSuitePath('TestCaseDefinesTestSuite'), [
                 ExplicitTestSuite\TestCaseDefinesTestSuite\MyFirstTestSuite::class => 0,
                 ExplicitTestSuite\TestCaseDefinesTestSuite\MySecondTestSuite::class => 0
             ]],
-            'TestSuiteDisabled' => [$this->explicitTestSuitePath('TestSuiteDisabled'), [
+            'TestSuiteDisabled' => [self::explicitTestSuitePath('TestSuiteDisabled'), [
                 ExplicitTestSuite\TestSuiteDisabled\MyTestSuite::class => 2
             ]]
         ];
     }
 
-    /**
-     * @dataProvider processedTestSuiteSummaryDisabledTestCaseCountProvider
-     */
+    #[DataProvider('processedTestSuiteSummaryDisabledTestCaseCountProvider')]
     public function testProcessedTestSuiteSummaryHasDisabledTestCaseCount(string $path, array $expected) : void {
         $results = $this->parser->parse($path);
         $listener = $this->createEventRecordingListener();
@@ -499,33 +469,31 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
         $this->assertEquals($expected, $actual);
     }
 
-    public function processedTestSuiteSummaryTotalTestCountProvider() : array {
+    public static function processedTestSuiteSummaryTotalTestCountProvider() : array {
         return [
-            [$this->implicitDefaultTestSuitePath('SingleTest'), [
+            [self::implicitDefaultTestSuitePath('SingleTest'), [
                 ImplicitTestSuite::class => 1,
             ]],
-            [$this->implicitDefaultTestSuitePath('TestCaseDisabled'), [
+            [self::implicitDefaultTestSuitePath('TestCaseDisabled'), [
                 ImplicitTestSuite::class => 3
             ]],
-            [$this->explicitTestSuitePath('TestCaseDefinesTestSuite'), [
+            [self::explicitTestSuitePath('TestCaseDefinesTestSuite'), [
                 ExplicitTestSuite\TestCaseDefinesTestSuite\MyFirstTestSuite::class => 1,
                 ExplicitTestSuite\TestCaseDefinesTestSuite\MySecondTestSuite::class => 2
             ]],
-            [$this->explicitTestSuitePath('TestSuiteDisabled'), [
+            [self::explicitTestSuitePath('TestSuiteDisabled'), [
                 ExplicitTestSuite\TestSuiteDisabled\MyTestSuite::class => 3
             ]],
-            [$this->implicitDefaultTestSuitePath('TestDisabled'), [
+            [self::implicitDefaultTestSuitePath('TestDisabled'), [
                 ImplicitTestSuite::class => 2
             ]],
-            [$this->implicitDefaultTestSuitePath('ExceptionThrowingTest'), [
+            [self::implicitDefaultTestSuitePath('ExceptionThrowingTest'), [
                 ImplicitTestSuite::class => 1
             ]]
         ];
     }
 
-    /**
-     * @dataProvider processedTestSuiteSummaryTotalTestCountProvider
-     */
+    #[DataProvider('processedTestSuiteSummaryTotalTestCountProvider')]
     public function testProcessedTestSuiteSummaryHasTotalTestCount(string $path, array $expected) : void {
         $results = $this->parser->parse($path);
         $listener = $this->createEventRecordingListener();
@@ -540,33 +508,31 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
         $this->assertEquals($expected, $actual);
     }
 
-    public function processedTestSuiteSummaryDisabledTestCountProvider() : array {
+    public static function processedTestSuiteSummaryDisabledTestCountProvider() : array {
         return [
-            'SingleTest' => [$this->implicitDefaultTestSuitePath('SingleTest'), [
+            'SingleTest' => [self::implicitDefaultTestSuitePath('SingleTest'), [
                 ImplicitTestSuite::class => 0,
             ]],
-            'TestCaseDisabled' => [$this->implicitDefaultTestSuitePath('TestCaseDisabled'), [
+            'TestCaseDisabled' => [self::implicitDefaultTestSuitePath('TestCaseDisabled'), [
                 ImplicitTestSuite::class => 3
             ]],
-            'TestCaseDefinesTestSuite' => [$this->explicitTestSuitePath('TestCaseDefinesTestSuite'), [
+            'TestCaseDefinesTestSuite' => [self::explicitTestSuitePath('TestCaseDefinesTestSuite'), [
                 ExplicitTestSuite\TestCaseDefinesTestSuite\MyFirstTestSuite::class => 0,
                 ExplicitTestSuite\TestCaseDefinesTestSuite\MySecondTestSuite::class => 0
             ]],
-            'TestSuiteDisabled' => [$this->explicitTestSuitePath('TestSuiteDisabled'), [
+            'TestSuiteDisabled' => [self::explicitTestSuitePath('TestSuiteDisabled'), [
                 ExplicitTestSuite\TestSuiteDisabled\MyTestSuite::class => 3
             ]],
-            'TestDisabled' => [$this->implicitDefaultTestSuitePath('TestDisabled'), [
+            'TestDisabled' => [self::implicitDefaultTestSuitePath('TestDisabled'), [
                 ImplicitTestSuite::class => 1
             ]],
-            'ExceptionThrowingTest' => [$this->implicitDefaultTestSuitePath('ExceptionThrowingTest'), [
+            'ExceptionThrowingTest' => [self::implicitDefaultTestSuitePath('ExceptionThrowingTest'), [
                 ImplicitTestSuite::class => 0
             ]]
         ];
     }
 
-    /**
-     * @dataProvider processedTestSuiteSummaryDisabledTestCountProvider
-     */
+    #[DataProvider('processedTestSuiteSummaryDisabledTestCountProvider')]
     public function testProcessedTestSuiteSummaryHasDisabledTestCount(string $path, array $expected) : void {
         $results = $this->parser->parse($path);
         $listener = $this->createEventRecordingListener();
@@ -581,27 +547,25 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
         $this->assertEquals($expected, $actual);
     }
 
-    public function processedTestSuiteSummaryPassedTestCountProvider() : array {
+    public static function processedTestSuiteSummaryPassedTestCountProvider() : array {
         return [
-            'SingleTest' => [$this->implicitDefaultTestSuitePath('SingleTest'), [ImplicitTestSuite::class => 1,]],
-            'TestCaseDisabled' => [$this->implicitDefaultTestSuitePath('TestCaseDisabled'), [ImplicitTestSuite::class => 0]],
-            'TestCaseDefinesTestSuite' => [$this->explicitTestSuitePath('TestCaseDefinesTestSuite'), [
+            'SingleTest' => [self::implicitDefaultTestSuitePath('SingleTest'), [ImplicitTestSuite::class => 1,]],
+            'TestCaseDisabled' => [self::implicitDefaultTestSuitePath('TestCaseDisabled'), [ImplicitTestSuite::class => 0]],
+            'TestCaseDefinesTestSuite' => [self::explicitTestSuitePath('TestCaseDefinesTestSuite'), [
                 ExplicitTestSuite\TestCaseDefinesTestSuite\MyFirstTestSuite::class => 1,
                 ExplicitTestSuite\TestCaseDefinesTestSuite\MySecondTestSuite::class => 2
             ]],
-            'ExtendedTestCases' => [$this->implicitDefaultTestSuitePath('ExtendedTestCases'), [ImplicitTestSuite::class => 8]],
-            'TestDisabled' => [$this->implicitDefaultTestSuitePath('TestDisabled'), [
+            'ExtendedTestCases' => [self::implicitDefaultTestSuitePath('ExtendedTestCases'), [ImplicitTestSuite::class => 8]],
+            'TestDisabled' => [self::implicitDefaultTestSuitePath('TestDisabled'), [
                 ImplicitTestSuite::class => 1
             ]],
-            'ExceptionThrowingTest' => [$this->implicitDefaultTestSuitePath('ExceptionThrowingTest'), [
+            'ExceptionThrowingTest' => [self::implicitDefaultTestSuitePath('ExceptionThrowingTest'), [
                 ImplicitTestSuite::class => 0
             ]]
         ];
     }
 
-    /**
-     * @dataProvider processedTestSuiteSummaryPassedTestCountProvider
-     */
+    #[DataProvider('processedTestSuiteSummaryPassedTestCountProvider')]
     public function testProcessedTestSuiteSummaryHasPassedTestCount(string $path, array $expected) : void {
         $results = $this->parser->parse($path);
         $listener = $this->createEventRecordingListener();
@@ -616,23 +580,21 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
         $this->assertEquals($expected, $actual);
     }
 
-    public function processedTestSuiteSummaryFailedTestCountProvider() : array {
+    public static function processedTestSuiteSummaryFailedTestCountProvider() : array {
         return [
-            'FailedAssertion' => [$this->implicitDefaultTestSuitePath('FailedAssertion'), [ImplicitTestSuite::class => 1,]],
-            'TestCaseDisabled' => [$this->implicitDefaultTestSuitePath('TestCaseDisabled'), [ImplicitTestSuite::class => 0]],
-            'TestCaseDefinesTestSuite' => [$this->explicitTestSuitePath('TestCaseDefinesTestSuite'), [
+            'FailedAssertion' => [self::implicitDefaultTestSuitePath('FailedAssertion'), [ImplicitTestSuite::class => 1,]],
+            'TestCaseDisabled' => [self::implicitDefaultTestSuitePath('TestCaseDisabled'), [ImplicitTestSuite::class => 0]],
+            'TestCaseDefinesTestSuite' => [self::explicitTestSuitePath('TestCaseDefinesTestSuite'), [
                 ExplicitTestSuite\TestCaseDefinesTestSuite\MyFirstTestSuite::class => 0,
                 ExplicitTestSuite\TestCaseDefinesTestSuite\MySecondTestSuite::class => 0
             ]],
-            'ExtendedTestCases' => [$this->implicitDefaultTestSuitePath('ExtendedTestCases'), [ImplicitTestSuite::class => 1]],
-            'FailedNotAssertion' => [$this->implicitDefaultTestSuitePath('FailedNotAssertion'), [ImplicitTestSuite::class => 1]],
-            'ExceptionThrowingTest' => [$this->implicitDefaultTestSuitePath('ExceptionThrowingTest'), [ImplicitTestSuite::class => 0]]
+            'ExtendedTestCases' => [self::implicitDefaultTestSuitePath('ExtendedTestCases'), [ImplicitTestSuite::class => 1]],
+            'FailedNotAssertion' => [self::implicitDefaultTestSuitePath('FailedNotAssertion'), [ImplicitTestSuite::class => 1]],
+            'ExceptionThrowingTest' => [self::implicitDefaultTestSuitePath('ExceptionThrowingTest'), [ImplicitTestSuite::class => 0]]
         ];
     }
 
-    /**
-     * @dataProvider processedTestSuiteSummaryFailedTestCountProvider
-     */
+    #[DataProvider('processedTestSuiteSummaryFailedTestCountProvider')]
     public function testProcessedTestSuiteSummaryHasFailedTestCount(string $path, array $expected) : void {
         $results = $this->parser->parse($path);
         $listener = $this->createEventRecordingListener();
@@ -647,23 +609,21 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
         $this->assertEquals($expected, $actual);
     }
 
-    public function processedTestSuiteSummaryErroredTestCountProvider() : array {
+    public static function processedTestSuiteSummaryErroredTestCountProvider() : array {
         return [
-            'FailedAssertion' => [$this->implicitDefaultTestSuitePath('FailedAssertion'), [ImplicitTestSuite::class => 0]],
-            'TestCaseDisabled' => [$this->implicitDefaultTestSuitePath('TestCaseDisabled'), [ImplicitTestSuite::class => 0]],
-            'TestCaseDefinesTestSuite' => [$this->explicitTestSuitePath('TestCaseDefinesTestSuite'), [
+            'FailedAssertion' => [self::implicitDefaultTestSuitePath('FailedAssertion'), [ImplicitTestSuite::class => 0]],
+            'TestCaseDisabled' => [self::implicitDefaultTestSuitePath('TestCaseDisabled'), [ImplicitTestSuite::class => 0]],
+            'TestCaseDefinesTestSuite' => [self::explicitTestSuitePath('TestCaseDefinesTestSuite'), [
                 ExplicitTestSuite\TestCaseDefinesTestSuite\MyFirstTestSuite::class => 0,
                 ExplicitTestSuite\TestCaseDefinesTestSuite\MySecondTestSuite::class => 0
             ]],
-            'ExtendedTestCases' => [$this->implicitDefaultTestSuitePath('ExtendedTestCases'), [ImplicitTestSuite::class => 0]],
-            'FailedNotAssertion' => [$this->implicitDefaultTestSuitePath('FailedNotAssertion'), [ImplicitTestSuite::class => 0]],
-            'ExceptionThrowingTest' => [$this->implicitDefaultTestSuitePath('ExceptionThrowingTest'), [ImplicitTestSuite::class => 1]]
+            'ExtendedTestCases' => [self::implicitDefaultTestSuitePath('ExtendedTestCases'), [ImplicitTestSuite::class => 0]],
+            'FailedNotAssertion' => [self::implicitDefaultTestSuitePath('FailedNotAssertion'), [ImplicitTestSuite::class => 0]],
+            'ExceptionThrowingTest' => [self::implicitDefaultTestSuitePath('ExceptionThrowingTest'), [ImplicitTestSuite::class => 1]]
         ];
     }
 
-    /**
-     * @dataProvider processedTestSuiteSummaryErroredTestCountProvider
-     */
+    #[DataProvider('processedTestSuiteSummaryErroredTestCountProvider')]
     public function testProcessedTestSuiteSummaryHasErroredTestCount(string $path, array $expected) : void {
         $results = $this->parser->parse($path);
         $listener = $this->createEventRecordingListener();
@@ -678,22 +638,20 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
         $this->assertEquals($expected, $actual);
     }
 
-    public function processedTestSuiteSummaryAssertionCountProvider() : array {
+    public static function processedTestSuiteSummaryAssertionCountProvider() : array {
         return [
-            'FailedAssertion' => [$this->implicitDefaultTestSuitePath('FailedAssertion'), [ImplicitTestSuite::class => 1,]],
-            'TestCaseDisabled' => [$this->implicitDefaultTestSuitePath('TestCaseDisabled'), [ImplicitTestSuite::class => 0]],
-            'TestCaseDefinesTestSuite' => [$this->explicitTestSuitePath('TestCaseDefinesTestSuite'), [
+            'FailedAssertion' => [self::implicitDefaultTestSuitePath('FailedAssertion'), [ImplicitTestSuite::class => 1,]],
+            'TestCaseDisabled' => [self::implicitDefaultTestSuitePath('TestCaseDisabled'), [ImplicitTestSuite::class => 0]],
+            'TestCaseDefinesTestSuite' => [self::explicitTestSuitePath('TestCaseDefinesTestSuite'), [
                 ExplicitTestSuite\TestCaseDefinesTestSuite\MyFirstTestSuite::class => 1,
                 ExplicitTestSuite\TestCaseDefinesTestSuite\MySecondTestSuite::class => 2
             ]],
-            'ExtendedTestCases' => [$this->implicitDefaultTestSuitePath('ExtendedTestCases'), [ImplicitTestSuite::class => 22]],
-            'FailedNotAssertion' => [$this->implicitDefaultTestSuitePath('FailedNotAssertion'), [ImplicitTestSuite::class => 1]]
+            'ExtendedTestCases' => [self::implicitDefaultTestSuitePath('ExtendedTestCases'), [ImplicitTestSuite::class => 22]],
+            'FailedNotAssertion' => [self::implicitDefaultTestSuitePath('FailedNotAssertion'), [ImplicitTestSuite::class => 1]]
         ];
     }
 
-    /**
-     * @dataProvider processedTestSuiteSummaryAssertionCountProvider
-     */
+    #[DataProvider('processedTestSuiteSummaryAssertionCountProvider')]
     public function testProcessedTestSuiteSummaryHasAssertionCount(string $path, array $expected) : void {
         $results = $this->parser->parse($path);
         $listener = $this->createEventRecordingListener();
@@ -708,12 +666,12 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
         $this->assertEquals($expected, $actual);
     }
 
-    public function processedTestCaseSummaryTestSuiteNameProvider() : array {
+    public static function processedTestCaseSummaryTestSuiteNameProvider() : array {
         return [
-            'SingleTest' => [$this->implicitDefaultTestSuitePath('SingleTest'), [
+            'SingleTest' => [self::implicitDefaultTestSuitePath('SingleTest'), [
                 ImplicitDefaultTestSuite\SingleTest\MyTestCase::class => ImplicitTestSuite::class
             ]],
-            'KitchenSink' => [$this->implicitDefaultTestSuitePath('KitchenSink'), [
+            'KitchenSink' => [self::implicitDefaultTestSuitePath('KitchenSink'), [
                 ImplicitDefaultTestSuite\KitchenSink\FirstTestCase::class => ImplicitDefaultTestSuite\KitchenSink\FirstTestSuite::class,
                 ImplicitDefaultTestSuite\KitchenSink\SecondTestCase::class => ImplicitDefaultTestSuite\KitchenSink\FirstTestSuite::class,
                 ImplicitDefaultTestSuite\KitchenSink\WhatAbout\SamwiseTestCase::class => ImplicitDefaultTestSuite\KitchenSink\WhatAbout\PotatoTestSuite::class,
@@ -725,9 +683,7 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
         ];
     }
 
-    /**
-     * @dataProvider processedTestCaseSummaryTestSuiteNameProvider
-     */
+    #[DataProvider('processedTestCaseSummaryTestSuiteNameProvider')]
     public function testProcessedTestCaseSummaryHasCorrectTestSuiteName(string $path, array $expected) : void {
         $results = $this->parser->parse($path);
         $listener = $this->createEventRecordingListener();
@@ -745,14 +701,14 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
         $this->assertEquals($expected, $actual);
     }
 
-    public function processedTestCaseSummaryTestNamesProvider() : array {
+    public static function processedTestCaseSummaryTestNamesProvider() : array {
         return [
-            [$this->implicitDefaultTestSuitePath('SingleTest'), [
+            [self::implicitDefaultTestSuitePath('SingleTest'), [
                 ImplicitDefaultTestSuite\SingleTest\MyTestCase::class => [
                     ImplicitDefaultTestSuite\SingleTest\MyTestCase::class . '::ensureSomethingHappens'
                 ]
             ]],
-            [$this->implicitDefaultTestSuitePath('KitchenSink'), [
+            [self::implicitDefaultTestSuitePath('KitchenSink'), [
                 ImplicitDefaultTestSuite\KitchenSink\FirstTestCase::class => [
                     ImplicitDefaultTestSuite\KitchenSink\FirstTestCase::class . '::testOne',
                     ImplicitDefaultTestSuite\KitchenSink\FirstTestCase::class . '::testTwo',
@@ -784,9 +740,7 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
         ];
     }
 
-    /**
-     * @dataProvider processedTestCaseSummaryTestNamesProvider
-     */
+    #[DataProvider('processedTestCaseSummaryTestNamesProvider')]
     public function testProcessedTestCaseSummaryHasCorrectTestNames(string $path, array $expected) : void {
         $results = $this->parser->parse($path);
         $listener = $this->createEventRecordingListener();
@@ -803,12 +757,12 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
         $this->assertEquals($expected, $actual);
     }
 
-    public function processedTestCaseSummaryTestCountProvider() : array {
+    public static function processedTestCaseSummaryTestCountProvider() : array {
         return [
-            [$this->implicitDefaultTestSuitePath('SingleTest'), [
+            [self::implicitDefaultTestSuitePath('SingleTest'), [
                 ImplicitDefaultTestSuite\SingleTest\MyTestCase::class => 1
             ]],
-            [$this->implicitDefaultTestSuitePath('KitchenSink'), [
+            [self::implicitDefaultTestSuitePath('KitchenSink'), [
                 ImplicitDefaultTestSuite\KitchenSink\FirstTestCase::class => 3,
                 ImplicitDefaultTestSuite\KitchenSink\SecondTestCase::class => 2,
                 ImplicitDefaultTestSuite\KitchenSink\WhatAbout\SamwiseTestCase::class => 1,
@@ -817,15 +771,13 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
                 ImplicitDefaultTestSuite\KitchenSink\SecondBreakfast\FoodAndBeverageTestCase::class => 4,
                 ImplicitDefaultTestSuite\KitchenSink\SecondBreakfast\BadTestCase::class => 1
             ]],
-            [$this->implicitDefaultTestSuitePath('ExceptionThrowingTest'), [
+            [self::implicitDefaultTestSuitePath('ExceptionThrowingTest'), [
                 ImplicitDefaultTestSuite\ExceptionThrowingTest\MyTestCase::class => 1
             ]]
         ];
     }
 
-    /**
-     * @dataProvider processedTestCaseSummaryTestCountProvider
-     */
+    #[DataProvider('processedTestCaseSummaryTestCountProvider')]
     public function testProcessedTestCaseSummaryHasCorrectTestCount(string $path, array $expected) : void {
         $results = $this->parser->parse($path);
         $listener = $this->createEventRecordingListener();
@@ -842,12 +794,12 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
         $this->assertEquals($expected, $actual);
     }
 
-    public function processedTestCaseSummaryDisabledTestCountProvider() : array {
+    public static function processedTestCaseSummaryDisabledTestCountProvider() : array {
         return [
-            [$this->implicitDefaultTestSuitePath('SingleTest'), [
+            [self::implicitDefaultTestSuitePath('SingleTest'), [
                 ImplicitDefaultTestSuite\SingleTest\MyTestCase::class => 0
             ]],
-            [$this->implicitDefaultTestSuitePath('KitchenSink'), [
+            [self::implicitDefaultTestSuitePath('KitchenSink'), [
                 ImplicitDefaultTestSuite\KitchenSink\FirstTestCase::class => 1,
                 ImplicitDefaultTestSuite\KitchenSink\SecondTestCase::class => 1,
                 ImplicitDefaultTestSuite\KitchenSink\WhatAbout\SamwiseTestCase::class => 0,
@@ -856,15 +808,13 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
                 ImplicitDefaultTestSuite\KitchenSink\SecondBreakfast\FoodAndBeverageTestCase::class => 0,
                 ImplicitDefaultTestSuite\KitchenSink\SecondBreakfast\BadTestCase::class => 0
             ]],
-            [$this->implicitDefaultTestSuitePath('ExceptionThrowingTest'), [
+            [self::implicitDefaultTestSuitePath('ExceptionThrowingTest'), [
                 ImplicitDefaultTestSuite\ExceptionThrowingTest\MyTestCase::class => 0
             ]]
         ];
     }
 
-    /**
-     * @dataProvider processedTestCaseSummaryDisabledTestCountProvider
-     */
+    #[DataProvider('processedTestCaseSummaryDisabledTestCountProvider')]
     public function testProcessedTestCaseSummaryHasCorrectDisabledTestCount(string $path, array $expected) : void {
         $results = $this->parser->parse($path);
         $listener = $this->createEventRecordingListener();
@@ -881,12 +831,12 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
         $this->assertEquals($expected, $actual);
     }
 
-    public function processedTestCaseSummaryPassedTestCountProvider() : array {
+    public static function processedTestCaseSummaryPassedTestCountProvider() : array {
         return [
-            [$this->implicitDefaultTestSuitePath('SingleTest'), [
+            [self::implicitDefaultTestSuitePath('SingleTest'), [
                 ImplicitDefaultTestSuite\SingleTest\MyTestCase::class => 1
             ]],
-            [$this->implicitDefaultTestSuitePath('KitchenSink'), [
+            [self::implicitDefaultTestSuitePath('KitchenSink'), [
                 ImplicitDefaultTestSuite\KitchenSink\FirstTestCase::class => 2,
                 ImplicitDefaultTestSuite\KitchenSink\SecondTestCase::class => 1,
                 ImplicitDefaultTestSuite\KitchenSink\WhatAbout\SamwiseTestCase::class => 1,
@@ -895,15 +845,13 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
                 ImplicitDefaultTestSuite\KitchenSink\SecondBreakfast\FoodAndBeverageTestCase::class => 4,
                 ImplicitDefaultTestSuite\KitchenSink\SecondBreakfast\BadTestCase::class => 0
             ]],
-            [$this->implicitDefaultTestSuitePath('ExceptionThrowingTest'), [
+            [self::implicitDefaultTestSuitePath('ExceptionThrowingTest'), [
                 ImplicitDefaultTestSuite\ExceptionThrowingTest\MyTestCase::class => 0
             ]]
         ];
     }
 
-    /**
-     * @dataProvider processedTestCaseSummaryPassedTestCountProvider
-     */
+    #[DataProvider('processedTestCaseSummaryPassedTestCountProvider')]
     public function testProcessedTestCaseSummaryHasCorrectPassedTestCount(string $path, array $expected) : void {
         $results = $this->parser->parse($path);
         $listener = $this->createEventRecordingListener();
@@ -920,15 +868,15 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
         $this->assertEquals($expected, $actual);
     }
 
-    public function processedTestCaseSummaryFailedTestCountProvider() : array {
+    public static function processedTestCaseSummaryFailedTestCountProvider() : array {
         return [
-            [$this->implicitDefaultTestSuitePath('SingleTest'), [
+            [self::implicitDefaultTestSuitePath('SingleTest'), [
                 ImplicitDefaultTestSuite\SingleTest\MyTestCase::class => 0
             ]],
-            [$this->implicitDefaultTestSuitePath('FailedAssertion'), [
+            [self::implicitDefaultTestSuitePath('FailedAssertion'), [
                 ImplicitDefaultTestSuite\FailedAssertion\MyTestCase::class => 1,
             ]],
-            [$this->implicitDefaultTestSuitePath('KitchenSink'), [
+            [self::implicitDefaultTestSuitePath('KitchenSink'), [
                 ImplicitDefaultTestSuite\KitchenSink\FirstTestCase::class => 0,
                 ImplicitDefaultTestSuite\KitchenSink\SecondTestCase::class => 0,
                 ImplicitDefaultTestSuite\KitchenSink\WhatAbout\SamwiseTestCase::class => 0,
@@ -937,15 +885,13 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
                 ImplicitDefaultTestSuite\KitchenSink\SecondBreakfast\FoodAndBeverageTestCase::class => 0,
                 ImplicitDefaultTestSuite\KitchenSink\SecondBreakfast\BadTestCase::class => 0
             ]],
-            [$this->implicitDefaultTestSuitePath('ExceptionThrowingTest'), [
+            [self::implicitDefaultTestSuitePath('ExceptionThrowingTest'), [
                 ImplicitDefaultTestSuite\ExceptionThrowingTest\MyTestCase::class => 0
             ]]
         ];
     }
 
-    /**
-     * @dataProvider processedTestCaseSummaryFailedTestCountProvider
-     */
+    #[DataProvider('processedTestCaseSummaryFailedTestCountProvider')]
     public function testProcessedTestCaseSummaryHasCorrectFailedTestCount(string $path, array $expected) : void {
         $results = $this->parser->parse($path);
         $listener = $this->createEventRecordingListener();
@@ -962,15 +908,15 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
         $this->assertEquals($expected, $actual);
     }
 
-    public function processedTestCaseSummaryErroredTestCountProvider() : array {
+    public static function processedTestCaseSummaryErroredTestCountProvider() : array {
         return [
-            [$this->implicitDefaultTestSuitePath('SingleTest'), [
+            [self::implicitDefaultTestSuitePath('SingleTest'), [
                 ImplicitDefaultTestSuite\SingleTest\MyTestCase::class => 0
             ]],
-            [$this->implicitDefaultTestSuitePath('FailedAssertion'), [
+            [self::implicitDefaultTestSuitePath('FailedAssertion'), [
                 ImplicitDefaultTestSuite\FailedAssertion\MyTestCase::class => 0,
             ]],
-            [$this->implicitDefaultTestSuitePath('KitchenSink'), [
+            [self::implicitDefaultTestSuitePath('KitchenSink'), [
                 ImplicitDefaultTestSuite\KitchenSink\FirstTestCase::class => 0,
                 ImplicitDefaultTestSuite\KitchenSink\SecondTestCase::class => 0,
                 ImplicitDefaultTestSuite\KitchenSink\WhatAbout\SamwiseTestCase::class => 0,
@@ -979,15 +925,13 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
                 ImplicitDefaultTestSuite\KitchenSink\SecondBreakfast\FoodAndBeverageTestCase::class => 0,
                 ImplicitDefaultTestSuite\KitchenSink\SecondBreakfast\BadTestCase::class => 1
             ]],
-            [$this->implicitDefaultTestSuitePath('ExceptionThrowingTest'), [
+            [self::implicitDefaultTestSuitePath('ExceptionThrowingTest'), [
                 ImplicitDefaultTestSuite\ExceptionThrowingTest\MyTestCase::class => 1
             ]]
         ];
     }
 
-    /**
-     * @dataProvider processedTestCaseSummaryErroredTestCountProvider
-     */
+    #[DataProvider('processedTestCaseSummaryErroredTestCountProvider')]
     public function testProcessedTestCaseSummaryHasCorrectErroredTestCount(string $path, array $expected) : void {
         $results = $this->parser->parse($path);
         $listener = $this->createEventRecordingListener();
@@ -1004,15 +948,15 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
         $this->assertEquals($expected, $actual);
     }
 
-    public function processedTestCaseSummaryAssertionCountProvider() : array {
+    public static function processedTestCaseSummaryAssertionCountProvider() : array {
         return [
-            'SingleTest' => [$this->implicitDefaultTestSuitePath('SingleTest'), [
+            'SingleTest' => [self::implicitDefaultTestSuitePath('SingleTest'), [
                 ImplicitDefaultTestSuite\SingleTest\MyTestCase::class => 1
             ]],
-            'FailedAssertion' => [$this->implicitDefaultTestSuitePath('FailedAssertion'), [
+            'FailedAssertion' => [self::implicitDefaultTestSuitePath('FailedAssertion'), [
                 ImplicitDefaultTestSuite\FailedAssertion\MyTestCase::class => 1,
             ]],
-            'KitchenSink' => [$this->implicitDefaultTestSuitePath('KitchenSink'), [
+            'KitchenSink' => [self::implicitDefaultTestSuitePath('KitchenSink'), [
                 ImplicitDefaultTestSuite\KitchenSink\FirstTestCase::class => 2,
                 ImplicitDefaultTestSuite\KitchenSink\SecondTestCase::class => 2,
                 ImplicitDefaultTestSuite\KitchenSink\WhatAbout\SamwiseTestCase::class => 1,
@@ -1024,9 +968,7 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
         ];
     }
 
-    /**
-     * @dataProvider processedTestCaseSummaryAssertionCountProvider
-     */
+    #[DataProvider('processedTestCaseSummaryAssertionCountProvider')]
     public function testProcessedTestCaseSummaryHasCorrectAssertionCount(string $path, array $expected) : void {
         $results = $this->parser->parse($path);
         $listener = $this->createEventRecordingListener();

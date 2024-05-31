@@ -11,9 +11,9 @@ abstract class AbstractAssertionTestCase extends TestCase {
 
     abstract protected function getExpected() : mixed;
 
-    abstract public function getGoodActual() : array;
+    abstract public static function getGoodActual() : array;
 
-    abstract public function getBadActual() : array;
+    abstract public static function getBadActual() : array;
 
     abstract protected function getSummaryAssertionMessageClass() : string;
 

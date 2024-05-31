@@ -3,11 +3,12 @@
 namespace Labrador\AsyncUnit\Test\Unit\Framework\Assertion\AssertionMessage;
 
 use Labrador\AsyncUnit\Framework\Assertion\AssertionMessage\BinaryOperandSummary;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 class BinaryOperandSummaryTest extends TestCase {
 
-    public function dataProvider() {
+    public static function dataProvider() {
         return [
             ['string', 'bar'],
             ['integer', 1],
@@ -20,9 +21,7 @@ class BinaryOperandSummaryTest extends TestCase {
         ];
     }
 
-    /**
-     * @dataProvider dataProvider
-     */
+    #[DataProvider('dataProvider')]
     public function testToString(string $a, mixed $b) : void {
         $message = new BinaryOperandSummary($a, $b);
         $expected = sprintf(
@@ -31,9 +30,7 @@ class BinaryOperandSummaryTest extends TestCase {
         $this->assertSame($expected, $message->toString());
     }
 
-    /**
-     * @dataProvider dataProvider
-     */
+    #[DataProvider('dataProvider')]
     public function testToNotString(string $a, mixed $b) : void {
         $message = new BinaryOperandSummary($a, $b) ;
         $expected = sprintf(

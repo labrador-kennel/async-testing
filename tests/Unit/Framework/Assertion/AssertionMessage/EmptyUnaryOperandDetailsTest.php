@@ -3,11 +3,12 @@
 namespace Labrador\AsyncUnit\Test\Unit\Framework\Assertion\AssertionMessage;
 
 use Labrador\AsyncUnit\Framework\Assertion\AssertionMessage\EmptyUnaryOperandDetails;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 class EmptyUnaryOperandDetailsTest extends TestCase {
 
-    public function dataProvider() : array {
+    public static function dataProvider() : array {
         return [
             ['foo'],
             [1],
@@ -20,9 +21,7 @@ class EmptyUnaryOperandDetailsTest extends TestCase {
         ];
     }
 
-    /**
-     * @dataProvider dataProvider
-     */
+    #[DataProvider('dataProvider')]
     public function testToString(mixed $actual) {
         $message = new EmptyUnaryOperandDetails($actual);
         $expectedDetails = var_export($actual, true);

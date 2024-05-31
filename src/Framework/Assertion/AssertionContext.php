@@ -1,20 +1,9 @@
 <?php declare(strict_types=1);
 
-namespace Labrador\AsyncUnit\Framework\Context;
+namespace Labrador\AsyncUnit\Framework\Assertion;
 
 use Countable;
-use Labrador\AsyncUnit\Framework\Assertion\AssertArrayEquals;
-use Labrador\AsyncUnit\Framework\Assertion\AssertCountEquals;
-use Labrador\AsyncUnit\Framework\Assertion\AssertFloatEquals;
-use Labrador\AsyncUnit\Framework\Assertion\AssertInstanceOf;
-use Labrador\AsyncUnit\Framework\Assertion\AssertIntEquals;
-use Labrador\AsyncUnit\Framework\Assertion\Assertion;
-use Labrador\AsyncUnit\Framework\Assertion\AssertionResult;
-use Labrador\AsyncUnit\Framework\Assertion\AssertIsEmpty;
-use Labrador\AsyncUnit\Framework\Assertion\AssertIsFalse;
-use Labrador\AsyncUnit\Framework\Assertion\AssertIsNull;
-use Labrador\AsyncUnit\Framework\Assertion\AssertIsTrue;
-use Labrador\AsyncUnit\Framework\Assertion\AssertStringEquals;
+use Labrador\AsyncUnit\Framework\Context\CustomAssertionContext;
 use Labrador\AsyncUnit\Framework\Exception\AssertionFailedException;
 
 /**
@@ -26,7 +15,7 @@ use Labrador\AsyncUnit\Framework\Exception\AssertionFailedException;
  */
 final class AssertionContext {
 
-    private function __construct(private CustomAssertionContext $customAssertionContext) {}
+    public function __construct() {}
 
     public function addToAssertionCount(int $assertionCount) : void {
         $this->count += $assertionCount;
@@ -72,11 +61,8 @@ final class AssertionContext {
         $this->doAssertion(new AssertIsNull($actual), $message);
     }
 
-    public function __call(string $methodName, array $args) : void {
-        $this->doAssertion(
-            $this->customAssertionContext->createAssertion($methodName, ...$args),
-            null
-        );
+    public function assertion(Assertion $assertion, string $message = null) : void {
+        $this->doAssertion($assertion, $message);
     }
 
     private function doAssertion(Assertion $assertion, ?string $message) : void {
@@ -110,7 +96,10 @@ final class AssertionContext {
         $this->isNot = false;
     }
 
-    private function handleAssertionResults(AssertionResult $result, bool $isNot, ?string $customMessage) {
+    /**
+     * @throws AssertionFailedException
+     */
+    private function handleAssertionResults(AssertionResult $result, bool $isNot, ?string $customMessage) : void {
         if (($isNot && $result->isSuccessful()) || (!$isNot && !$result->isSuccessful())) {
             throw new AssertionFailedException(
                 $customMessage ?? $this->getDefaultFailureMessage($isNot ? $result->getSummary()->toNotString() : $result->getSummary()->toString()),

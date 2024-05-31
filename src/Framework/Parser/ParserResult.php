@@ -16,7 +16,7 @@ final class ParserResult {
     public function __construct(private AsyncUnitModelCollector $collector) {}
 
     /**
-     * @return TestSuiteModel[]
+     * @return list<TestSuiteModel>
      */
     public function getTestSuiteModels() : array {
         return $this->collector->getTestSuiteModels();

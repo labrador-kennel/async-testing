@@ -18,13 +18,13 @@ class AssertArrayEqualsTest extends AbstractAssertionTestCase {
         return ['a', 'b', 'c'];
     }
 
-    public function getGoodActual() : array {
+    public static function getGoodActual() : array {
         return [
             [['a', 'b', 'c']]
         ];
     }
 
-    public function getBadActual() : array {
+    public static function getBadActual() : array {
         return [
             [['z', 'x', 'y']],
             [1],

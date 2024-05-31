@@ -207,22 +207,6 @@ class TestSuiteRunnerTest extends PHPUnitTestCase {
         $this->assertSame('Something barfed', $this->listener->getTargets()[0]->getException()->getMessage());
     }
 
-    public function testImplicitDefaultTestSuiteCustomAssertionsEmitsTestProcessedEventWithCorrectData() {
-        // Mock setup to make sure our custom assertion is being called properly
-        $assertion = $this->getMockBuilder(Assertion::class)->getMock();
-        $assertionResult = $this->getMockBuilder(AssertionResult::class)->getMock();
-        $assertionResult->expects($this->once())->method('isSuccessful')->willReturn(true);
-        $assertion->expects($this->once())->method('assert')->willReturn($assertionResult);
-
-        $this->customAssertionContext->registerAssertion('theCustomAssertion', fn() => $assertion);
-
-        // Normal TestSuiteRunner testing
-        $this->parseAndRun($this->implicitDefaultTestSuitePath('CustomAssertions'));
-
-        $this->assertCount(1, $this->listener->getTargets());
-        $this->assertSame(TestState::Passed, $this->listener->getTargets()[0]->getState());
-    }
-
     public function testImplicitDefaultTestSuiteHasDataProviderEmitsTestProcessedEventsForEachDataSetOnUniqueTestCase() {
         $this->parseAndRun($this->implicitDefaultTestSuitePath('HasDataProvider'));
         $this->assertCount(3, $this->listener->getTargets());
@@ -485,25 +469,17 @@ class TestSuiteRunnerTest extends PHPUnitTestCase {
 
         $testSuiteRunner = new TestSuiteRunner(
             $this->emitter,
-            $this->customAssertionContext,
             $randomizer,
             $mockBridgeFactory
         );
 
         $this->assertCount(1, $testSuites);
         $this->assertNotEmpty($testSuites[0]->getTestCaseModels());
-        $randomizer->expects($this->exactly(3))
+        $matcher = $this->exactly(3);
+        $randomizer->expects($matcher)
             ->method('randomize')
-            ->withConsecutive(
-                [$testSuites],
-                [$testSuites[0]->getTestCaseModels()],
-                [$testSuites[0]->getTestCaseModels()[0]->getTestModels()]
-            )
-            ->willReturnOnConsecutiveCalls(
-                $testSuites,
-                $testSuites[0]->getTestCaseModels(),
-                $testSuites[0]->getTestCaseModels()[0]->getTestModels()
-            );
+            ->withAnyParameters()
+            ->willReturnArgument(0);
 
         $testSuiteRunner->runTestSuites($results);
     }

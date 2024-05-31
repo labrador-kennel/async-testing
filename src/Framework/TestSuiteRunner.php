@@ -4,7 +4,7 @@ namespace Labrador\AsyncUnit\Framework;
 
 use Amp\Future;
 use Labrador\AsyncEvent\Emitter;
-use Labrador\AsyncUnit\Framework\Context\AssertionContext;
+use Labrador\AsyncUnit\Framework\Assertion\AssertionContext;
 use Labrador\AsyncUnit\Framework\Context\CustomAssertionContext;
 use Labrador\AsyncUnit\Framework\Context\ExpectationContext;
 use Labrador\AsyncUnit\Framework\Event\ProcessingFinishedEvent;
@@ -55,7 +55,6 @@ final class TestSuiteRunner {
 
     public function __construct(
         private readonly Emitter $emitter,
-        private readonly CustomAssertionContext $customAssertionContext,
         private readonly Randomizer $randomizer,
         private readonly MockBridgeFactory $mockBridgeFactory
     ) {}
@@ -76,8 +75,7 @@ final class TestSuiteRunner {
 
         foreach ($testSuiteModels as $testSuiteModel) {
             $testSuiteClass = $testSuiteModel->getClass();
-            /** @var TestSuite $testSuite */
-            $testSuite = (new ReflectionClass($testSuiteClass))->newInstanceWithoutConstructor();
+            $testSuite = new $testSuiteClass();
             $testSuiteSummary = $parserResult->getTestSuiteSummary($testSuite::class);
             $this->emitter->emit(new TestSuiteStartedEvent($testSuiteSummary));
 
@@ -402,37 +400,25 @@ final class TestSuiteRunner {
     }
 
     private function invokeTestCaseConstructor(string $testCaseClass, TestSuite $testSuite, TestModel $testModel) : array {
-        /** @var TestCase $testCaseObject */
-        $reflectionClass = $this->getReflectionClass($testCaseClass);
-        $testCaseObject = $reflectionClass->newInstanceWithoutConstructor();
-        $reflectedAssertionContext = $this->getReflectionClass(AssertionContext::class);
-        $reflectedExpectationContext = $this->getReflectionClass(ExpectationContext::class);
-        $testCaseConstructor = $reflectionClass->getConstructor();
-        assert($testCaseConstructor !== null);
-
-        $assertionContext = $reflectedAssertionContext->newInstanceWithoutConstructor();
-        $assertionContextConstructor = $reflectedAssertionContext->getConstructor();
-        assert($assertionContextConstructor !== null);
-        $assertionContextConstructor->invoke($assertionContext, $this->customAssertionContext);
-
+        $assertionContext = new AssertionContext();
         $testMocker = null;
         if (isset($this->mockBridgeClass)) {
             $testMocker = $this->mockBridgeFactory->make($this->mockBridgeClass);
         }
+        $expectationContext = new ExpectationContext(
+            $testModel,
+            $assertionContext,
+            $testMocker
+        );
 
-        $expectationContext = $reflectedExpectationContext->newInstanceWithoutConstructor();
-        $expectationContextConstructor = $reflectedExpectationContext->getConstructor();
-        assert($expectationContextConstructor !== null);
-        $expectationContextConstructor->invoke($expectationContext, $testModel, $assertionContext, $testMocker);
-
-        $testCaseConstructor->invoke(
-            $testCaseObject,
+        $testCase = new $testCaseClass(
             $testSuite,
             $assertionContext,
             $expectationContext,
             $testMocker
         );
-        return [$testCaseObject, $assertionContext, $expectationContext, $testMocker];
+
+        return [$testCase, $assertionContext, $expectationContext, $testMocker];
     }
 
 }

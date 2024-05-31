@@ -2,7 +2,7 @@
 
 namespace Labrador\AsyncUnit\Framework;
 
-use Labrador\AsyncUnit\Framework\Context\AssertionContext;
+use Labrador\AsyncUnit\Framework\Assertion\AssertionContext;
 use Labrador\AsyncUnit\Framework\Context\ExpectationContext;
 use Labrador\AsyncUnit\Framework\Context\TestExpector;
 use Labrador\AsyncUnit\Framework\Exception\InvalidStateException;
@@ -26,7 +26,7 @@ abstract class TestCase {
      * intentionally designed to lockdown the internal functionality required by the specification of the framework
      * while keeping open things that are useful in the context of writing unit tests.
      */
-    private function __construct(
+    final public function __construct(
         public readonly TestSuite $testSuite,
         protected readonly AssertionContext $assert,
         private ExpectationContext $expectationContext,

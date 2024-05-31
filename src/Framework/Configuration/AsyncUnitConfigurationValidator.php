@@ -4,6 +4,7 @@ namespace Labrador\AsyncUnit\Framework\Configuration;
 
 use Amp\File\Filesystem;
 use Labrador\AsyncUnit\Framework\Plugin\ResultPrinterPlugin;
+use Labrador\AsyncUnit\Framework\ResultPrinter;
 use function Amp\File\filesystem;
 
 final class AsyncUnitConfigurationValidator implements ConfigurationValidator {
@@ -52,11 +53,11 @@ final class AsyncUnitConfigurationValidator implements ConfigurationValidator {
                 'The result printer "%s" is not a class that can be found. Please ensure this class is configured to be autoloaded through Composer.',
                 $resultPrinterClass
             )];
-        } else if (!in_array(ResultPrinterPlugin::class, class_implements($resultPrinterClass), true)) {
+        } else if (!in_array(ResultPrinter::class, class_implements($resultPrinterClass), true)) {
             $errors['resultPrinter'] = [sprintf(
                 'The result printer "%s" is not a %s. Please ensure your result printer implements this interface.',
                 $resultPrinterClass,
-                ResultPrinterPlugin::class
+                ResultPrinter::class
             )];
         }
         return $errors;

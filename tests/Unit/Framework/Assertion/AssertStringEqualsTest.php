@@ -13,7 +13,7 @@ class AssertStringEqualsTest extends AbstractAssertionTestCase {
         return new AssertStringEquals($value, $actual);
     }
 
-    public function getGoodActual() : array {
+    public static function getGoodActual() : array {
         return [
             ['async unit']
         ];
@@ -23,7 +23,7 @@ class AssertStringEqualsTest extends AbstractAssertionTestCase {
         return 'async unit';
     }
 
-    public function getBadActual() : array {
+    public static function getBadActual() : array {
         return [
             ['blocking code'],
             ['phpunit'],

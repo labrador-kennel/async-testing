@@ -69,6 +69,9 @@ final class AsyncUnitModelCollector {
         return isset($this->defaultTestSuite);
     }
 
+    /**
+     * @return list<TestSuiteModel>
+     */
     public function getTestSuiteModels() : array {
         return array_values($this->testSuiteModels);
     }

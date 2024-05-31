@@ -17,13 +17,13 @@ class AssertIntEqualsTest extends AbstractAssertionTestCase {
         return 1234;
     }
 
-    public function getGoodActual() : array {
+    public static function getGoodActual() : array {
         return [
             [1234]
         ];
     }
 
-    public function getBadActual() : array {
+    public static function getBadActual() : array {
         return [
             [9876],
             [1234.56],

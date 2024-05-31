@@ -10,7 +10,6 @@ use Labrador\AsyncUnit\Framework\AsyncUnitApplication;
 use Labrador\AsyncUnit\Framework\Configuration\AsyncUnitConfigurationValidator;
 use Labrador\AsyncUnit\Framework\Configuration\Configuration;
 use Labrador\AsyncUnit\Framework\Configuration\ConfigurationFactory;
-use Labrador\AsyncUnit\Framework\Context\CustomAssertionContext;
 use Labrador\AsyncUnit\Framework\Event\Events;
 use Labrador\AsyncUnit\Framework\Event\TestFailedEvent;
 use Labrador\AsyncUnit\Framework\Event\TestPassedEvent;
@@ -62,7 +61,6 @@ class AsyncUnitApplicationTest extends TestCase {
             new StaticAnalysisParser(),
             new TestSuiteRunner(
                 $emitter,
-                new CustomAssertionContext(),
                 new ShuffleRandomizer(),
                 $this->mockBridgeFactory
             ),
@@ -155,26 +153,6 @@ class AsyncUnitApplicationTest extends TestCase {
 
         $testResult = $event->payload();
         $this->assertSame(TestState::Failed, $testResult->getState());
-    }
-
-    public function testLoadingCustomAssertionPlugins() {
-        $this->markTestSkipped('Need to consider how AsyncUnit integrates with the container.');
-        $configuration = new TestConfiguration();
-        $configuration->setTestDirectories([$this->implicitDefaultTestSuitePath('SingleTest')]);
-        [,$application] = $this->getStateAndApplication('singleTest', $configuration);
-
-        $application->registerPlugin(FooAssertionPlugin::class);
-        $application->registerPlugin(BarAssertionPlugin::class);
-
-        $application->run();
-
-        $actual = $this->injector->make(CustomAssertionContext::class);
-
-        $fooPlugin = $this->injector->make(FooAssertionPlugin::class);
-        $barPlugin = $this->injector->make(BarAssertionPlugin::class);
-
-        $this->assertSame($fooPlugin->getCustomAssertionContext(), $actual);
-        $this->assertSame($barPlugin->getCustomAssertionContext(), $actual);
     }
 
     public function testExplicitTestSuiteTestSuiteStateShared() {

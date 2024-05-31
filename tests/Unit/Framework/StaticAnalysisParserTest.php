@@ -5,7 +5,6 @@ namespace Labrador\AsyncUnit\Test\Unit\Framework;
 use Labrador\AsyncUnit\Framework\Exception\TestCompilationException;
 use Labrador\AsyncUnit\Framework\HookType;
 use Labrador\AsyncUnit\Framework\ImplicitTestSuite;
-use Labrador\AsyncUnit\Framework\Model\PluginModel;
 use Labrador\AsyncUnit\Framework\Model\TestCaseModel;
 use Labrador\AsyncUnit\Framework\Model\TestModel;
 use Labrador\AsyncUnit\Framework\Model\TestSuiteModel;
@@ -16,6 +15,7 @@ use Labrador\AsyncUnit\Framework\Parser\ParserResult;
 use Labrador\AsyncUnit\Framework\Parser\StaticAnalysisParser;
 use Labrador\AsyncUnit\Framework\TestCase;
 use Labrador\AsyncUnit\Framework\TestSuite;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase as PHPUnitTestCase;
 
 class StaticAnalysisParserTest extends PHPUnitTestCase {
@@ -23,11 +23,9 @@ class StaticAnalysisParserTest extends PHPUnitTestCase {
     use AsyncUnitAssertions;
     use UsesAcmeSrc;
 
-    private string $acmeSrcDir;
     private StaticAnalysisParser $subject;
 
     public function setUp() : void {
-        $this->acmeSrcDir = dirname(__DIR__, 3) . '/acme_src';
         $this->subject = new StaticAnalysisParser();
     }
 
@@ -35,58 +33,58 @@ class StaticAnalysisParserTest extends PHPUnitTestCase {
         $this->expectException(TestCompilationException::class);
         $this->expectExceptionMessage('Failure compiling "Acme\\DemoSuites\\ErrorConditions\\NoTestsTestCase\\BadTestCase". There were no #[Test] found.');
 
-        $this->subject->parse($this->acmeSrcDir . '/ErrorConditions/NoTestsTestCase');
+        $this->subject->parse(self::errorConditionsPath('NoTestsTestCase'));
     }
 
     public function testErrorConditionsBeforeAllNonStaticMethod() {
         $this->expectException(TestCompilationException::class);
         $this->expectExceptionMessage('Failure compiling "Acme\\DemoSuites\\ErrorConditions\\BeforeAllNonStaticMethod\\BadTestCase". The non-static method "badBeforeAllMustBeStatic" cannot be used as a #[BeforeAll] hook.');
 
-        $this->subject->parse($this->acmeSrcDir . '/ErrorConditions/BeforeAllNonStaticMethod');
+        $this->subject->parse(self::errorConditionsPath('BeforeAllNonStaticMethod'));
     }
 
     public function testErrorConditionsAfterAllNonStaticMethod() {
         $this->expectException(TestCompilationException::class);
         $this->expectExceptionMessage('Failure compiling "Acme\\DemoSuites\\ErrorConditions\\AfterAllNonStaticMethod\\BadTestCase". The non-static method "badAfterAllMustBeStatic" cannot be used as a #[AfterAll] hook.');
 
-        $this->subject->parse($this->acmeSrcDir . '/ErrorConditions/AfterAllNonStaticMethod');
+        $this->subject->parse(self::errorConditionsPath('AfterAllNonStaticMethod'));
     }
 
     public function testErrorConditionsTestAttributeOnNotTestCase() {
         $this->expectException(TestCompilationException::class);
         $this->expectExceptionMessage('Failure compiling "Acme\\DemoSuites\\ErrorConditions\\TestAttributeOnNotTestCase\\BadTestCase". The method "ensureSomething" is annotated with #[Test] but this class does not extend "' . TestCase::class . '".');
 
-        $this->subject->parse($this->acmeSrcDir . '/ErrorConditions/TestAttributeOnNotTestCase');
+        $this->subject->parse(self::errorConditionsPath('TestAttributeOnNotTestCase'));
     }
 
     public function testErrorConditionsBeforeAllAttributeOnNotTestCaseOrTestSuite() {
         $this->expectException(TestCompilationException::class);
         $this->expectExceptionMessage('Failure compiling "Acme\\DemoSuites\\ErrorConditions\\BeforeAllAttributeOnNotTestCaseOrTestSuite\\BadTestCase". The method "ensureSomething" is annotated with #[BeforeAll] but this class does not extend "' . TestSuite::class . '" or "' . TestCase::class . '".');
 
-        $this->subject->parse($this->acmeSrcDir . '/ErrorConditions/BeforeAllAttributeOnNotTestCaseOrTestSuite');
+        $this->subject->parse(self::errorConditionsPath('BeforeAllAttributeOnNotTestCaseOrTestSuite'));
     }
 
     public function testErrorConditionsAfterAllAttributeOnNotTestCaseOrTestSuite() {
         $this->expectException(TestCompilationException::class);
         $this->expectExceptionMessage('Failure compiling "Acme\\DemoSuites\\ErrorConditions\\AfterAllAttributeOnNotTestCaseOrTestSuite\\BadTestCase". The method "ensureSomething" is annotated with #[AfterAll] but this class does not extend "' . TestSuite::class . '" or "' . TestCase::class . '".');
 
-        $this->subject->parse($this->acmeSrcDir . '/ErrorConditions/AfterAllAttributeOnNotTestCaseOrTestSuite');
+        $this->subject->parse(self::errorConditionsPath('AfterAllAttributeOnNotTestCaseOrTestSuite'));
     }
 
     public function testErrorConditionsAfterEachAttributeOnNotTestCaseOrTestSuite() {
         $this->expectException(TestCompilationException::class);
         $this->expectExceptionMessage('Failure compiling "Acme\\DemoSuites\\ErrorConditions\\AfterEachAttributeOnNotTestCaseOrTestSuite\\BadTestCase". The method "ensureSomething" is annotated with #[AfterEach] but this class does not extend "' . TestSuite::class . '" or "' . TestCase::class . '".');
 
-        $this->subject->parse($this->acmeSrcDir . '/ErrorConditions/AfterEachAttributeOnNotTestCaseOrTestSuite');
+        $this->subject->parse(self::errorConditionsPath('AfterEachAttributeOnNotTestCaseOrTestSuite'));
     }
 
     public function testErrorConditionsBeforeEachAttributeOnNotTestCaseOrTestSuite() {
         $this->expectException(TestCompilationException::class);
         $this->expectExceptionMessage('Failure compiling "Acme\\DemoSuites\\ErrorConditions\\BeforeEachAttributeOnNotTestCaseOrTestSuite\\BadTestCase". The method "ensureSomething" is annotated with #[BeforeEach] but this class does not extend "' . TestSuite::class . '" or "' . TestCase::class . '".');
-        $this->subject->parse($this->acmeSrcDir . '/ErrorConditions/BeforeEachAttributeOnNotTestCaseOrTestSuite');
+        $this->subject->parse(self::errorConditionsPath('BeforeEachAttributeOnNotTestCaseOrTestSuite'));
     }
 
-    public function badNamespaceDataProvider() : array {
+    public static function badNamespaceDataProvider() : array {
         return [
             ['BadNamespaceTest', 'MyTestCase'],
             ['BadNamespaceTestCaseAfterAll', 'MyTestCase'],
@@ -102,9 +100,7 @@ class StaticAnalysisParserTest extends PHPUnitTestCase {
         ];
     }
 
-    /**
-     * @dataProvider badNamespaceDataProvider
-     */
+    #[DataProvider('badNamespaceDataProvider')]
     public function testErrorConditionsBadNamespace(string $errorConditionNamespace, string $simpleClass) {
         $this->expectException(TestCompilationException::class);
         $expected = sprintf(
@@ -115,7 +111,7 @@ class StaticAnalysisParserTest extends PHPUnitTestCase {
         );
         $this->expectExceptionMessage($expected);
 
-        $this->subject->parse($this->acmeSrcDir . '/ErrorConditions/' . $errorConditionNamespace . '/');
+        $this->subject->parse(self::errorConditionsPath($errorConditionNamespace));
     }
 
     public function testDefaultTestSuiteName() : void {
@@ -259,7 +255,7 @@ class StaticAnalysisParserTest extends PHPUnitTestCase {
         $this->assertTestMethodBelongsToTestCase($fifthTestCaseClass . '::fifthEnsureSomething', $fifthTestCase);
     }
 
-    public function hooksProvider() : array {
+    public static function hooksProvider() : array {
         return [
             [HookType::BeforeAll, 'HasSingleBeforeAllHook', 'beforeAll'],
             [HookType::BeforeEach, 'HasSingleBeforeEachHook', 'beforeEach'],
@@ -268,9 +264,7 @@ class StaticAnalysisParserTest extends PHPUnitTestCase {
         ];
     }
 
-    /**
-     * @dataProvider hooksProvider
-     */
+    #[DataProvider('hooksProvider')]
     public function testParsingSimpleTestCaseHasHooks(HookType $hookType, string $subNamespace, string $methodName) {
         $results = $this->subject->parse($this->implicitDefaultTestSuitePath($subNamespace));
         $testSuites = $results->getTestSuiteModels();
@@ -284,17 +278,6 @@ class StaticAnalysisParserTest extends PHPUnitTestCase {
         $this->assertCount(1, $myTestCase->getHooks($hookType));
         $this->assertSame('Acme\\DemoSuites\\ImplicitDefaultTestSuite\\' . $subNamespace . '\\MyTestCase', $myTestCase->getHooks($hookType)[0]->getClass());
         $this->assertSame($methodName, $myTestCase->getHooks($hookType)[0]->getMethod());
-    }
-
-    public function testParsingCustomAssertionPlugins() {
-        $results = $this->subject->parse($this->implicitDefaultTestSuitePath('HasAssertionPlugin'));
-
-        $this->assertCount(2, $results->getPluginModels());
-
-        $pluginNames = array_map(static fn(PluginModel $pluginModel) => $pluginModel->getPluginClass(), $results->getPluginModels());
-        $expected = [ImplicitDefaultTestSuite\HasAssertionPlugin\MyCustomAssertionPlugin::class, ImplicitDefaultTestSuite\HasAssertionPlugin\MyOtherCustomAssertionPlugin::class];
-
-        $this->assertEqualsCanonicalizing($expected, $pluginNames);
     }
 
     public function testParsingDataProvider() {
@@ -353,14 +336,6 @@ class StaticAnalysisParserTest extends PHPUnitTestCase {
         $myTestSuite = $this->fetchTestSuiteModel($results->getTestSuiteModels(), ExplicitTestSuite\TestCaseDefinedAndImplicitDefaultTestSuite\MyTestSuite::class);
         $this->assertCount(1, $myTestSuite->getTestCaseModels());
         $this->assertTestCaseClassBelongsToTestSuite(ExplicitTestSuite\TestCaseDefinedAndImplicitDefaultTestSuite\SecondTestCase::class, $myTestSuite);
-    }
-
-    public function testImplicitDefaultTestSuitePathHasResultPrinterPlugin() {
-        $results = $this->subject->parse($this->implicitDefaultTestSuitePath('HasResultPrinterPlugin'));
-
-        $this->assertCount(1, $results->getPluginModels());
-        $pluginModel = $results->getPluginModels()[0];
-        $this->assertSame(ImplicitDefaultTestSuite\HasResultPrinterPlugin\MyResultPrinterPlugin::class, $pluginModel->getPluginClass());
     }
 
     public function testImplicitDefaultTestSuitePathTestDisabled() {
@@ -526,7 +501,7 @@ class StaticAnalysisParserTest extends PHPUnitTestCase {
         $this->assertSame(125, $testSuite->getTestCaseModels()[1]->getTestModels()[0]->getTimeout());
     }
 
-    public function hookPriorityProvider() : array {
+    public static function hookPriorityProvider() : array {
         return [
             [HookType::BeforeAll, 'beforeAll'],
             [HookType::AfterAll, 'afterAll'],
@@ -535,9 +510,7 @@ class StaticAnalysisParserTest extends PHPUnitTestCase {
         ];
     }
 
-    /**
-     * @dataProvider hookPriorityProvider
-     */
+    #[DataProvider('hookPriorityProvider')]
     public function testImplicitDefaultTestSuiteTestCaseHooksPriorityBeforeAll(HookType $hookType, string $typePrefix) : void {
         $results = $this->subject->parse($this->implicitDefaultTestSuitePath('TestCaseHooksPriority'));
 
@@ -561,9 +534,9 @@ class StaticAnalysisParserTest extends PHPUnitTestCase {
         $this->assertEquals($expected, $actual);
     }
 
-    public function suiteHookPriorityProvider() : array {
+    public static function suiteHookPriorityProvider() : array {
         return array_merge(
-            $this->hookPriorityProvider(),
+            self::hookPriorityProvider(),
             [
                 [HookType::BeforeEachTest, 'beforeEachTest'],
                 [HookType::AfterEachTest, 'afterEachTest']
@@ -572,9 +545,7 @@ class StaticAnalysisParserTest extends PHPUnitTestCase {
 
     }
 
-    /**
-     * @dataProvider suiteHookPriorityProvider
-     */
+    #[DataProvider('suiteHookPriorityProvider')]
     public function testExplicitTestSuiteTestSuiteHookPriority(HookType $hookType, string $typePrefix) {
         $results = $this->subject->parse($this->explicitTestSuitePath('TestSuiteHookPriority'));
 

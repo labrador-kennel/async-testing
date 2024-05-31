@@ -34,14 +34,14 @@ final class JsonConfigurationFactory implements ConfigurationFactory {
         $this->filesystem = filesystem();
     }
 
-    public function make(string $configFile) : Configuration {
-        $contents = $this->filesystem->read($configFile);
+    public function make(string $path) : Configuration {
+        $contents = $this->filesystem->read($path);
         $configJson = json_decode($contents, flags: JSON_THROW_ON_ERROR);
         $results = $this->validator->validate($configJson, $this->schema);
         if ($results->hasError()) {
             $msg = sprintf(
                 'The JSON file at "%s" does not adhere to the JSON Schema https://labrador-kennel.io/dev/async-unit/schema/cli-config.json',
-                $configFile
+                $path
             );
             throw new InvalidConfigurationException($msg);
         }
@@ -58,10 +58,6 @@ final class JsonConfigurationFactory implements ConfigurationFactory {
 
             public function getTestDirectories() : array {
                 return $this->config->testDirectories;
-            }
-
-            public function getPlugins() : array {
-                return $this->config->plugins ?? [];
             }
 
             public function getResultPrinter(): string {

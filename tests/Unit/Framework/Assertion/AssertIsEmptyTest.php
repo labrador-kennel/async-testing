@@ -17,7 +17,7 @@ class AssertIsEmptyTest extends AbstractAssertionTestCase {
         return null;
     }
 
-    public function getGoodActual() : array {
+    public static function getGoodActual() : array {
         return [
             [[]],
             [0],
@@ -27,7 +27,7 @@ class AssertIsEmptyTest extends AbstractAssertionTestCase {
         ];
     }
 
-    public function getBadActual() : array {
+    public static function getBadActual() : array {
         return [
             [[1, 2, 3, 4]],
             ['a']

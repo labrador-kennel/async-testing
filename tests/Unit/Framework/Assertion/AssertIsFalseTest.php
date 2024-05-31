@@ -17,13 +17,13 @@ class AssertIsFalseTest extends AbstractAssertionTestCase {
         return null;
     }
 
-    public function getGoodActual() : array {
+    public static function getGoodActual() : array {
         return [
             [false]
         ];
     }
 
-    public function getBadActual() : array {
+    public static function getBadActual() : array {
         return [
             [true],
             [1],

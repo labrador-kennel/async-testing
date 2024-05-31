@@ -3,11 +3,12 @@
 namespace Labrador\AsyncUnit\Test\Unit\Framework\Assertion\AssertionMessage;
 
 use Labrador\AsyncUnit\Framework\Assertion\AssertionMessage\TrueUnaryOperandDetails;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 class TrueUnaryOperandDetailsTest extends TestCase {
 
-    public function dataProvider() : array {
+    public static function dataProvider() : array {
         return [
             ['foo'],
             [1],
@@ -20,9 +21,7 @@ class TrueUnaryOperandDetailsTest extends TestCase {
         ];
     }
 
-    /**
-     * @dataProvider dataProvider
-     */
+    #[DataProvider('dataProvider')]
     public function testToString(mixed $actual) {
         $message = new TrueUnaryOperandDetails($actual);
         $expectedDetails = var_export($actual, true);
@@ -33,9 +32,7 @@ class TrueUnaryOperandDetailsTest extends TestCase {
         $this->assertSame($expected, $message->toString());
     }
 
-    /**
-     * @dataProvider dataProvider
-     */
+    #[DataProvider('dataProvider')]
     public function testToNotString(mixed $actual) {
         $message = new TrueUnaryOperandDetails($actual);
         $expectedDetails = var_export($actual, true);

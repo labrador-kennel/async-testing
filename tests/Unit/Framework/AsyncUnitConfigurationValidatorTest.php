@@ -5,7 +5,7 @@ namespace Labrador\AsyncUnit\Test\Unit\Framework;
 use Labrador\AsyncUnit\Framework\Configuration\AsyncUnitConfigurationValidator;
 use Labrador\AsyncUnit\Framework\Configuration\ConfigurationValidationResults;
 use Labrador\AsyncUnit\Framework\Configuration\ConfigurationValidator;
-use Labrador\AsyncUnit\Framework\Plugin\ResultPrinterPlugin;
+use Labrador\AsyncUnit\Framework\ResultPrinter;
 use Labrador\AsyncUnit\Test\Unit\Framework\Stub\TestConfiguration;
 use Generator;
 use PHPUnit\Framework\TestCase as PHPUnitTestCase;
@@ -77,7 +77,7 @@ class AsyncUnitConfigurationValidatorTest extends PHPUnitTestCase {
         $this->assertFalse($results->isValid());
         $this->assertArrayHasKey('resultPrinter', $results->getValidationErrors());
         $this->assertSame(
-            ['The result printer "Generator" is not a ' . ResultPrinterPlugin::class . '. Please ensure your result printer implements this interface.'],
+            ['The result printer "Generator" is not a ' . ResultPrinter::class . '. Please ensure your result printer implements this interface.'],
             $results->getValidationErrors()['resultPrinter']
         );
     }

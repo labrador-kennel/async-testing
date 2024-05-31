@@ -6,7 +6,7 @@ abstract class TestSuite {
 
     private array $data = [];
 
-    private function __construct() {}
+    final public function __construct() {}
 
     public static function getNamespacesToAttach() : array {
         return [];

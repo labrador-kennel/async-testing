@@ -2,6 +2,7 @@
 
 namespace Labrador\AsyncUnit\Framework\Context;
 
+use Labrador\AsyncUnit\Framework\Assertion\AssertionContext;
 use Labrador\AsyncUnit\Framework\Exception\MockFailureException;
 use Labrador\AsyncUnit\Framework\Exception\TestErrorException;
 use Labrador\AsyncUnit\Framework\Exception\TestFailedException;
@@ -22,7 +23,7 @@ final class ExpectationContext implements TestExpector {
 
     private ?int $expectedAssertionCount = null;
 
-    private function __construct(
+    public function __construct(
         private readonly TestModel $testModel,
         private readonly AssertionContext $assertionContext,
         private readonly ?MockBridge $mockBridge

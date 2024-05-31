@@ -5,12 +5,10 @@ namespace Labrador\AsyncUnit\Framework;
 use Labrador\AsyncEvent\Emitter;
 use Labrador\AsyncUnit\Framework\Configuration\AsyncUnitConfigurationValidator;
 use Labrador\AsyncUnit\Framework\Configuration\ConfigurationFactory;
-use Labrador\AsyncUnit\Framework\Context\CustomAssertionContext;
+use Labrador\AsyncUnit\Framework\Configuration\JsonConfigurationFactory;
 use Labrador\AsyncUnit\Framework\MockBridge\MockBridgeFactory;
 use Labrador\AsyncUnit\Framework\MockBridge\NoConstructorMockBridgeFactory;
 use Labrador\AsyncUnit\Framework\Parser\StaticAnalysisParser;
-use Labrador\AsyncUnit\Framework\Plugin\CustomAssertionPlugin;
-use Labrador\AsyncUnit\Framework\Plugin\ResultPrinterPlugin;
 use Labrador\AsyncUnit\Framework\Randomizer\ShuffleRandomizer;
 
 /**
@@ -23,29 +21,11 @@ use Labrador\AsyncUnit\Framework\Randomizer\ShuffleRandomizer;
  */
 final class AsyncUnitFrameworkRunner {
 
-    /**
-     * @var list<ResultPrinterPlugin>
-     */
-    private array $resultPrinterPlugins = [];
-
-    /**
-     * @var list<CustomAssertionPlugin>
-     */
-    private array $customAssertionPlugin = [];
-
     public function __construct(
         private readonly Emitter $emitter,
-        private readonly ConfigurationFactory $configurationFactory,
-        private readonly ?MockBridgeFactory $mockBridgeFactory = null
+        private readonly ConfigurationFactory $configurationFactory = new JsonConfigurationFactory(),
+        private readonly MockBridgeFactory $mockBridgeFactory = new NoConstructorMockBridgeFactory()
     ) {}
-
-    public function registerPlugin(ResultPrinterPlugin|CustomAssertionPlugin $plugin) : void {
-        if ($plugin instanceof ResultPrinterPlugin) {
-            $this->resultPrinterPlugins[] = $plugin;
-        } else {
-            $this->customAssertionPlugin[] = $plugin;
-        }
-    }
 
     public function run(string $configFile) : void {
         $application = new AsyncUnitApplication(
@@ -54,9 +34,8 @@ final class AsyncUnitFrameworkRunner {
             new StaticAnalysisParser(),
             new TestSuiteRunner(
                 $this->emitter,
-                new CustomAssertionContext(),
                 new ShuffleRandomizer(),
-                $this->mockBridgeFactory ?? new NoConstructorMockBridgeFactory()
+                $this->mockBridgeFactory
             ),
             $configFile
         );

@@ -17,13 +17,13 @@ class AssertFloatEqualsTest extends AbstractAssertionTestCase {
         return 9876.54;
     }
 
-    public function getGoodActual() : array {
+    public static function getGoodActual() : array {
         return [
             [9876.54]
         ];
     }
 
-    public function getBadActual() : array {
+    public static function getBadActual() : array {
         return [
             [1234.56],
             [9876],

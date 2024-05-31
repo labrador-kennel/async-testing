@@ -13,7 +13,7 @@ class AssertIsTrueTest extends AbstractAssertionTestCase {
         return new AssertIsTrue($actual);
     }
 
-    public function getGoodActual() : array {
+    public static function getGoodActual() : array {
         return [
             [true]
         ];
@@ -23,7 +23,7 @@ class AssertIsTrueTest extends AbstractAssertionTestCase {
         return null;
     }
 
-    public function getBadActual() : array {
+    public static function getBadActual() : array {
         return [
             [false],
             [1],

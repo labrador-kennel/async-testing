@@ -2,6 +2,8 @@
 
 namespace Labrador\AsyncUnit\Framework\Model;
 
+use Labrador\AsyncUnit\Framework\TestSuite;
+
 final class TestSuiteModel {
 
     use HookAware;
@@ -15,6 +17,9 @@ final class TestSuiteModel {
         private bool $isDefaultTestSuite
     ) {}
 
+    /**
+     * @return class-string<TestSuite>
+     */
     public function getClass() : string {
         return $this->class;
     }

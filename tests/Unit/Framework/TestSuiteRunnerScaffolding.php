@@ -16,18 +16,15 @@ trait TestSuiteRunnerScaffolding {
 
     private StaticAnalysisParser $parser;
     private Emitter $emitter;
-    private CustomAssertionContext $customAssertionContext;
     private TestSuiteRunner $testSuiteRunner;
     private MockBridgeFactory $mockBridgeFactory;
 
     public function buildTestSuiteRunner() : void {
         $this->parser = new StaticAnalysisParser();
         $this->emitter = new AmpEmitter();
-        $this->customAssertionContext = (new ReflectionClass(CustomAssertionContext::class))->newInstanceWithoutConstructor();
         $this->mockBridgeFactory = new NoConstructorMockBridgeFactory();
         $this->testSuiteRunner = new TestSuiteRunner(
             $this->emitter,
-            $this->customAssertionContext,
             new NullRandomizer(),
             $this->mockBridgeFactory
         );

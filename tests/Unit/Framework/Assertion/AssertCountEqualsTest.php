@@ -17,7 +17,7 @@ class AssertCountEqualsTest extends AbstractAssertionTestCase {
         return 5;
     }
 
-    public function getGoodActual() : array {
+    public static function getGoodActual() : array {
         return [
             [[1, 2, 3, 4, 5]],
             [['a', 'b', 'c', 'd', 'e']],
@@ -25,7 +25,7 @@ class AssertCountEqualsTest extends AbstractAssertionTestCase {
         ];
     }
 
-    public function getBadActual() : array {
+    public static function getBadActual() : array {
         return [
             [[]],
             [[1, 2, 3, 4]],
