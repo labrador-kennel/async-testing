@@ -46,7 +46,7 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
         $listener = $this->createEventRecordingListener();
         $this->emitter->register(Events::PROCESSING_STARTED, $listener);
 
-        $this->testSuiteRunner->runTestSuites($results);
+        $this->testSuiteRunner->runTestSuites($results)->await();
 
         $this->assertCount(1, $listener->actual);
         /** @var ProcessingStartedEvent $testStartedEvent */
@@ -71,7 +71,7 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
         $listener = $this->createEventRecordingListener();
         $this->emitter->register(Events::PROCESSING_FINISHED, $listener);
 
-        $this->testSuiteRunner->runTestSuites($results);
+        $this->testSuiteRunner->runTestSuites($results)->await();
 
         $this->assertCount(1, $listener->actual);
         $testFinishedEvent = $listener->actual[0];
@@ -99,7 +99,7 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
         $listener = $this->createEventRecordingListener();
         $this->emitter->register(Events::PROCESSING_FINISHED, $listener);
 
-        $this->testSuiteRunner->runTestSuites($results);
+        $this->testSuiteRunner->runTestSuites($results)->await();
 
         $this->assertCount(1, $listener->actual);
         $testFinishedEvent = $listener->actual[0];
@@ -122,7 +122,7 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
         $results = $this->parser->parse($path);
         $listener = $this->createEventRecordingListener();
         $this->emitter->register(Events::PROCESSING_FINISHED, $listener);
-        $this->testSuiteRunner->runTestSuites($results);
+        $this->testSuiteRunner->runTestSuites($results)->await();
 
         $this->assertCount(1, $listener->actual);
         $testFinishedEvent = $listener->actual[0];
@@ -144,7 +144,7 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
         $results = $this->parser->parse($path);
         $listener = $this->createEventRecordingListener();
         $this->emitter->register(Events::PROCESSING_FINISHED, $listener);
-        $this->testSuiteRunner->runTestSuites($results);
+        $this->testSuiteRunner->runTestSuites($results)->await();
 
         $this->assertCount(1, $listener->actual);
         $testFinishedEvent = $listener->actual[0];
@@ -167,7 +167,7 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
         $results = $this->parser->parse($path);
         $listener = $this->createEventRecordingListener();
         $this->emitter->register(Events::PROCESSING_FINISHED, $listener);
-        $this->testSuiteRunner->runTestSuites($results);
+        $this->testSuiteRunner->runTestSuites($results)->await();
 
         $this->assertCount(1, $listener->actual);
         /** @var ProcessingFinishedEvent $testFinishedEvent */
@@ -192,7 +192,7 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
         $results = $this->parser->parse($path);
         $listener = $this->createEventRecordingListener();
         $this->emitter->register(Events::PROCESSING_FINISHED, $listener);
-        $this->testSuiteRunner->runTestSuites($results);
+        $this->testSuiteRunner->runTestSuites($results)->await();
 
         $this->assertCount(1, $listener->actual);
         /** @var ProcessingFinishedEvent $testFinishedEvent */
@@ -217,7 +217,7 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
         $results = $this->parser->parse($path);
         $listener = $this->createEventRecordingListener();
         $this->emitter->register(Events::PROCESSING_FINISHED, $listener);
-        $this->testSuiteRunner->runTestSuites($results);
+        $this->testSuiteRunner->runTestSuites($results)->await();
 
         $this->assertCount(1, $listener->actual);
         /** @var ProcessingFinishedEvent $testFinishedEvent */
@@ -242,7 +242,7 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
         $results = $this->parser->parse($path);
         $listener = $this->createEventRecordingListener();
         $this->emitter->register(Events::PROCESSING_FINISHED, $listener);
-        $this->testSuiteRunner->runTestSuites($results);
+        $this->testSuiteRunner->runTestSuites($results)->await();
 
         $this->assertCount(1, $listener->actual);
         /** @var ProcessingFinishedEvent $testFinishedEvent */
@@ -268,7 +268,7 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
         $results = $this->parser->parse($path);
         $listener = $this->createEventRecordingListener();
         $this->emitter->register(Events::PROCESSING_FINISHED, $listener);
-        $this->testSuiteRunner->runTestSuites($results);
+        $this->testSuiteRunner->runTestSuites($results)->await();
 
         $this->assertCount(1, $listener->actual);
         $testFinishedEvent = $listener->actual[0];
@@ -293,7 +293,7 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
         $results = $this->parser->parse($path);
         $listener = $this->createEventRecordingListener();
         $this->emitter->register(Events::PROCESSING_FINISHED, $listener);
-        $this->testSuiteRunner->runTestSuites($results);
+        $this->testSuiteRunner->runTestSuites($results)->await();
 
         $this->assertCount(1, $listener->actual);
         /** @var ProcessingFinishedEvent $testFinishedEvent */
@@ -317,7 +317,7 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
         $results = $this->parser->parse($path);
         $listener = $this->createEventRecordingListener();
         $this->emitter->register(Events::PROCESSING_FINISHED, $listener);
-        $this->testSuiteRunner->runTestSuites($results);
+        $this->testSuiteRunner->runTestSuites($results)->await();
 
         $this->assertCount(1, $listener->actual);
         /** @var ProcessingFinishedEvent $testFinishedEvent */
@@ -343,7 +343,7 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
         $results = $this->parser->parse($path);
         $listener = $this->createEventRecordingListener();
         $this->emitter->register(Events::TEST_SUITE_FINISHED, $listener);
-        $this->testSuiteRunner->runTestSuites($results);
+        $this->testSuiteRunner->runTestSuites($results)->await();
 
         $this->assertEqualsCanonicalizing(
             $expected,
@@ -385,7 +385,7 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
             $results = $this->parser->parse($path);
             $listener = $this->createEventRecordingListener();
             $this->emitter->register(Events::TEST_SUITE_FINISHED, $listener);
-            $this->testSuiteRunner->runTestSuites($results);
+            $this->testSuiteRunner->runTestSuites($results)->await();
 
             $actual = [];
             foreach ($listener->actual as $event) {
@@ -426,7 +426,7 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
         $results = $this->parser->parse($path);
         $listener = $this->createEventRecordingListener();
         $this->emitter->register(Events::TEST_SUITE_FINISHED, $listener);
-        $this->testSuiteRunner->runTestSuites($results);
+        $this->testSuiteRunner->runTestSuites($results)->await();
 
         $actual = [];
         foreach ($listener->actual as $event) {
@@ -459,7 +459,7 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
         $results = $this->parser->parse($path);
         $listener = $this->createEventRecordingListener();
         $this->emitter->register(Events::TEST_SUITE_FINISHED, $listener);
-        $this->testSuiteRunner->runTestSuites($results);
+        $this->testSuiteRunner->runTestSuites($results)->await();
 
         $actual = [];
         foreach ($listener->actual as $event) {
@@ -498,7 +498,7 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
         $results = $this->parser->parse($path);
         $listener = $this->createEventRecordingListener();
         $this->emitter->register(Events::TEST_SUITE_FINISHED, $listener);
-        $this->testSuiteRunner->runTestSuites($results);
+        $this->testSuiteRunner->runTestSuites($results)->await();
 
         $actual = [];
         foreach ($listener->actual as $event) {
@@ -537,7 +537,7 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
         $results = $this->parser->parse($path);
         $listener = $this->createEventRecordingListener();
         $this->emitter->register(Events::TEST_SUITE_FINISHED, $listener);
-        $this->testSuiteRunner->runTestSuites($results);
+        $this->testSuiteRunner->runTestSuites($results)->await();
 
         $actual = [];
         foreach ($listener->actual as $event) {
@@ -570,7 +570,7 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
         $results = $this->parser->parse($path);
         $listener = $this->createEventRecordingListener();
         $this->emitter->register(Events::TEST_SUITE_FINISHED, $listener);
-        $this->testSuiteRunner->runTestSuites($results);
+        $this->testSuiteRunner->runTestSuites($results)->await();
 
         $actual = [];
         foreach ($listener->actual as $event) {
@@ -599,7 +599,7 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
         $results = $this->parser->parse($path);
         $listener = $this->createEventRecordingListener();
         $this->emitter->register(Events::TEST_SUITE_FINISHED, $listener);
-        $this->testSuiteRunner->runTestSuites($results);
+        $this->testSuiteRunner->runTestSuites($results)->await();
 
         $actual = [];
         foreach ($listener->actual as $event) {
@@ -628,7 +628,7 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
         $results = $this->parser->parse($path);
         $listener = $this->createEventRecordingListener();
         $this->emitter->register(Events::TEST_SUITE_FINISHED, $listener);
-        $this->testSuiteRunner->runTestSuites($results);
+        $this->testSuiteRunner->runTestSuites($results)->await();
 
         $actual = [];
         foreach ($listener->actual as $event) {
@@ -656,7 +656,7 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
         $results = $this->parser->parse($path);
         $listener = $this->createEventRecordingListener();
         $this->emitter->register(Events::TEST_SUITE_FINISHED, $listener);
-        $this->testSuiteRunner->runTestSuites($results);
+        $this->testSuiteRunner->runTestSuites($results)->await();
 
         $actual = [];
         foreach ($listener->actual as $event) {
@@ -688,7 +688,7 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
         $results = $this->parser->parse($path);
         $listener = $this->createEventRecordingListener();
         $this->emitter->register(Events::TEST_CASE_FINISHED, $listener);
-        $this->testSuiteRunner->runTestSuites($results);
+        $this->testSuiteRunner->runTestSuites($results)->await();
 
         $actual = [];
 
@@ -745,7 +745,7 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
         $results = $this->parser->parse($path);
         $listener = $this->createEventRecordingListener();
         $this->emitter->register(Events::TEST_CASE_FINISHED, $listener);
-        $this->testSuiteRunner->runTestSuites($results);
+        $this->testSuiteRunner->runTestSuites($results)->await();
 
         $actual = [];
         foreach ($listener->actual as $event) {
@@ -782,7 +782,7 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
         $results = $this->parser->parse($path);
         $listener = $this->createEventRecordingListener();
         $this->emitter->register(Events::TEST_CASE_FINISHED, $listener);
-        $this->testSuiteRunner->runTestSuites($results);
+        $this->testSuiteRunner->runTestSuites($results)->await();
 
         $actual = [];
         foreach ($listener->actual as $event) {
@@ -819,7 +819,7 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
         $results = $this->parser->parse($path);
         $listener = $this->createEventRecordingListener();
         $this->emitter->register(Events::TEST_CASE_FINISHED, $listener);
-        $this->testSuiteRunner->runTestSuites($results);
+        $this->testSuiteRunner->runTestSuites($results)->await();
 
         $actual = [];
         foreach ($listener->actual as $event) {
@@ -856,7 +856,7 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
         $results = $this->parser->parse($path);
         $listener = $this->createEventRecordingListener();
         $this->emitter->register(Events::TEST_CASE_FINISHED, $listener);
-        $this->testSuiteRunner->runTestSuites($results);
+        $this->testSuiteRunner->runTestSuites($results)->await();
 
         $actual = [];
         foreach ($listener->actual as $event) {
@@ -896,7 +896,7 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
         $results = $this->parser->parse($path);
         $listener = $this->createEventRecordingListener();
         $this->emitter->register(Events::TEST_CASE_FINISHED, $listener);
-        $this->testSuiteRunner->runTestSuites($results);
+        $this->testSuiteRunner->runTestSuites($results)->await();
 
         $actual = [];
         foreach ($listener->actual as $event) {
@@ -936,7 +936,7 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
         $results = $this->parser->parse($path);
         $listener = $this->createEventRecordingListener();
         $this->emitter->register(Events::TEST_CASE_FINISHED, $listener);
-        $this->testSuiteRunner->runTestSuites($results);
+        $this->testSuiteRunner->runTestSuites($results)->await();
 
         $actual = [];
         foreach ($listener->actual as $event) {
@@ -973,7 +973,7 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
         $results = $this->parser->parse($path);
         $listener = $this->createEventRecordingListener();
         $this->emitter->register(Events::TEST_CASE_FINISHED, $listener);
-        $this->testSuiteRunner->runTestSuites($results);
+        $this->testSuiteRunner->runTestSuites($results)->await();
 
         $actual = [];
         foreach ($listener->actual as $event) {
@@ -989,7 +989,7 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
         $results = $this->parser->parse($this->implicitDefaultTestSuitePath('MultipleTestsKnownDuration'));
         $listener = $this->createEventRecordingListener();
         $this->emitter->register(Events::PROCESSING_FINISHED, $listener);
-        $this->testSuiteRunner->runTestSuites($results);
+        $this->testSuiteRunner->runTestSuites($results)->await();
 
         self::assertCount(1, $listener->actual);
         $event = $listener->actual[0];
@@ -1001,7 +1001,7 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
         $results = $this->parser->parse($this->implicitDefaultTestSuitePath('MultipleTestsKnownDuration'));
         $listener = $this->createEventRecordingListener();
         $this->emitter->register(Events::TEST_SUITE_FINISHED, $listener);
-        $this->testSuiteRunner->runTestSuites($results);
+        $this->testSuiteRunner->runTestSuites($results)->await();
 
         self::assertCount(1, $listener->actual);
         $event = $listener->actual[0];
@@ -1013,7 +1013,7 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
         $results = $this->parser->parse($this->implicitDefaultTestSuitePath('MultipleTestsKnownDuration'));
         $listener = $this->createEventRecordingListener();
         $this->emitter->register(Events::TEST_CASE_FINISHED, $listener);
-        $this->testSuiteRunner->runTestSuites($results);
+        $this->testSuiteRunner->runTestSuites($results)->await();
 
         $expected = [
             ImplicitDefaultTestSuite\MultipleTestsKnownDuration\FirstTestCase::class => 99,
@@ -1035,7 +1035,7 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
         $results = $this->parser->parse($this->implicitDefaultTestSuitePath('MultipleTestsKnownDuration'));
         $listener = $this->createEventRecordingListener();
         $this->emitter->register(Events::TEST_PROCESSED, $listener);
-        $this->testSuiteRunner->runTestSuites($results);
+        $this->testSuiteRunner->runTestSuites($results)->await();
 
         $actual = [];
         foreach ($listener->actual as $event) {
@@ -1061,7 +1061,7 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
         $results = $this->parser->parse($this->implicitDefaultTestSuitePath('TestDisabled'));
         $listener = $this->createEventRecordingListener();
         $this->emitter->register(Events::TEST_DISABLED, $listener);
-        $this->testSuiteRunner->runTestSuites($results);
+        $this->testSuiteRunner->runTestSuites($results)->await();
 
         $actual = [];
         foreach ($listener->actual as $event) {
@@ -1076,7 +1076,7 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
         $results = $this->parser->parse($this->implicitDefaultTestSuitePath('SingleTest'));
         $listener = $this->createEventRecordingListener();
         $this->emitter->register(Events::PROCESSING_FINISHED, $listener);
-        $this->testSuiteRunner->runTestSuites($results);
+        $this->testSuiteRunner->runTestSuites($results)->await();
 
         self::assertCount(1, $listener->actual);
         $event = $listener->actual[0];
@@ -1089,7 +1089,7 @@ class TestSuiteRunnerStatisticsTest extends PHPUnitTestCase {
         $listener = $this->createEventRecordingListener();
         $this->emitter->register(Events::TEST_PROCESSED, $listener);
         $this->testSuiteRunner->setMockBridgeClass(MockeryMockBridge::class);
-        $this->testSuiteRunner->runTestSuites($results);
+        $this->testSuiteRunner->runTestSuites($results)->await();
 
         self::assertCount(1, $listener->actual);
         $event = $listener->actual[0];

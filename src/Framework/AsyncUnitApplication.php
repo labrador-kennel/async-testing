@@ -40,7 +40,7 @@ final class AsyncUnitApplication {
         gc_collect_cycles();
 
         $this->testSuiteRunner->setMockBridgeClass($configuration->getMockBridge());
-        $this->testSuiteRunner->runTestSuites($parserResults);
+        $this->testSuiteRunner->runTestSuites($parserResults)->await();
     }
 
     private function validateConfiguration(Configuration $configuration) : void {

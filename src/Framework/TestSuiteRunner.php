@@ -2,10 +2,10 @@
 
 namespace Labrador\AsyncUnit\Framework;
 
+use Amp\DeferredFuture;
 use Amp\Future;
 use Labrador\AsyncEvent\Emitter;
 use Labrador\AsyncUnit\Framework\Assertion\AssertionContext;
-use Labrador\AsyncUnit\Framework\Context\CustomAssertionContext;
 use Labrador\AsyncUnit\Framework\Context\ExpectationContext;
 use Labrador\AsyncUnit\Framework\Event\ProcessingFinishedEvent;
 use Labrador\AsyncUnit\Framework\Event\ProcessingStartedEvent;
@@ -63,7 +63,26 @@ final class TestSuiteRunner {
         $this->mockBridgeClass = $mockBridge;
     }
 
-    public function runTestSuites(ParserResult $parserResult) : void {
+    public function runTestSuites(ParserResult $parserResult) : Future {
+        $deferred = new DeferredFuture();
+        EventLoop::queue(function() use($parserResult, $deferred) {
+            $exception = null;
+            try {
+                $this->doProcessing($parserResult);
+            } catch (Throwable $throwable) {
+                $exception = $throwable;
+            } finally {
+                if ($exception !== null) {
+                    $deferred->error($exception);
+                } else {
+                    $deferred->complete();
+                }
+            }
+        });
+        return $deferred->getFuture();
+    }
+
+    private function doProcessing(ParserResult $parserResult) : void {
         $this->emitter->emit(
             new ProcessingStartedEvent($parserResult->getAggregateSummary())
         )->awaitAll();

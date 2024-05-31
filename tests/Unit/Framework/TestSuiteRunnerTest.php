@@ -8,8 +8,6 @@ use Amp\Future;
 use Exception;
 use Labrador\AsyncEvent\Event;
 use Labrador\AsyncEvent\Listener;
-use Labrador\AsyncUnit\Framework\Assertion\Assertion;
-use Labrador\AsyncUnit\Framework\Assertion\AssertionResult;
 use Labrador\AsyncUnit\Framework\Configuration\Configuration;
 use Labrador\AsyncUnit\Framework\Event\Events;
 use Labrador\AsyncUnit\Framework\Exception\InvalidArgumentException;
@@ -60,7 +58,7 @@ class TestSuiteRunnerTest extends PHPUnitTestCase {
 
     private function parseAndRun(string $path) : void {
         $results = $this->parser->parse($path);
-        $this->testSuiteRunner->runTestSuites($results);
+        $this->testSuiteRunner->runTestSuites($results)->await();
     }
 
     private function createRecordingListener() : Listener {
@@ -481,7 +479,7 @@ class TestSuiteRunnerTest extends PHPUnitTestCase {
             ->withAnyParameters()
             ->willReturnArgument(0);
 
-        $testSuiteRunner->runTestSuites($results);
+        $testSuiteRunner->runTestSuites($results)->await();
     }
 
     public function testImplicitDefaultTestSuiteTestExpectsExceptionOnly() {
