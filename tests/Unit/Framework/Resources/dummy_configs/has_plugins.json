@@ -1,0 +1,5 @@
+{
+  "testDirectories": ["."],
+  "resultPrinter": "Labrador\\AsyncUnit\\Cli\\DefaultResultPrinter",
+  "plugins": ["FooBar"]
+}

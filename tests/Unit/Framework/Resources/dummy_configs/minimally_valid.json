@@ -1,0 +1,5 @@
+{
+  "testDirectories": ["."],
+  "resultPrinter": "Labrador\\AsyncUnit\\Cli\\TerminalResultPrinter",
+  "mockBridge": "Cspray\\Labrador\\AsyncUnit\\Stub\\MockBridgeStub"
+}

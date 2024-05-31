@@ -2,19 +2,19 @@
 
 namespace Acme\DemoSuites\ExplicitTestSuite\AfterEachTestTestSuiteHook;
 
-use Cspray\Labrador\AsyncUnit\Attribute\Test;
-use Cspray\Labrador\AsyncUnit\TestCase;
+use Labrador\AsyncUnit\Framework\Attribute\Test;
+use Labrador\AsyncUnit\Framework\TestCase;
 
 class ThirdTestCase extends TestCase {
 
     #[Test]
     public function testFoo() : void {
-        $this->assert()->arrayEquals([], $this->testSuite()->getState());
+        $this->assert->arrayEquals([], $this->testSuite->getState());
     }
 
     #[Test]
     public function testBar() : void {
-        $this->assert()->arrayEquals([], $this->testSuite()->getState());
+        $this->assert->arrayEquals([], $this->testSuite->getState());
     }
 
 }

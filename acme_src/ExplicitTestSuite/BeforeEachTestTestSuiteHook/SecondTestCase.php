@@ -2,14 +2,14 @@
 
 namespace Acme\DemoSuites\ExplicitTestSuite\BeforeEachTestTestSuiteHook;
 
-use Cspray\Labrador\AsyncUnit\Attribute\Test;
-use Cspray\Labrador\AsyncUnit\TestCase;
+use Labrador\AsyncUnit\Framework\Attribute\Test;
+use Labrador\AsyncUnit\Framework\TestCase;
 
 class SecondTestCase extends TestCase {
 
     #[Test]
     public function ensureIntEquals() : void {
-        $this->assert()->intEquals(1, 1);
+        $this->assert->intEquals(1, 1);
     }
 
 }

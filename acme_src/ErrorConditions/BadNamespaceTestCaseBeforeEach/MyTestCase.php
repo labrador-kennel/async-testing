@@ -2,8 +2,8 @@
 
 namespace Acme\DemoSuites\ErrorConditions\BadNamespaceTestCaseBeforeEach\IntentionallyBad;
 
-use Cspray\Labrador\AsyncUnit\Attribute\BeforeEach;
-use Cspray\Labrador\AsyncUnit\TestCase;
+use Labrador\AsyncUnit\Framework\Attribute\BeforeEach;
+use Labrador\AsyncUnit\Framework\TestCase;
 
 class MyTestCase extends TestCase {
 

@@ -4,22 +4,22 @@ namespace Acme\DemoSuites\ImplicitDefaultTestSuite\KitchenSink;
 
 use Amp\Future;
 use Amp\Success;
-use Cspray\Labrador\AsyncUnit\Attribute\AttachToTestSuite;
-use Cspray\Labrador\AsyncUnit\Attribute\Disabled;
-use Cspray\Labrador\AsyncUnit\Attribute\Test;
-use Cspray\Labrador\AsyncUnit\TestCase;
+use Labrador\AsyncUnit\Framework\Attribute\AttachToTestSuite;
+use Labrador\AsyncUnit\Framework\Attribute\Disabled;
+use Labrador\AsyncUnit\Framework\Attribute\Test;
+use Labrador\AsyncUnit\Framework\TestCase;
 
 #[AttachToTestSuite(FirstTestSuite::class)]
 class FirstTestCase extends TestCase {
 
     #[Test]
     public function testOne() {
-        $this->assert()->countEquals(3, [1, 2, 3]);
+        $this->assert->countEquals(3, [1, 2, 3]);
     }
 
     #[Test]
     public function testTwo() {
-        $this->asyncAssert()->countEquals(4, Future::complete(['a', 'b', 'c', 'd']));
+        $this->assert->countEquals(4, ['a', 'b', 'c', 'd']);
     }
 
     #[Test]

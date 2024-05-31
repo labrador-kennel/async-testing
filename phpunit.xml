@@ -14,16 +14,10 @@
          colors="true">
     <testsuites>
         <testsuite name="all">
-            <directory>framework_test</directory>
-            <directory>cli_test</directory>
-            <directory suffix=".phpt">cli_test/Integration</directory>
+            <directory>tests/Unit</directory>
         </testsuite>
         <testsuite name="framework">
-            <directory>framework_test</directory>
-        </testsuite>
-        <testsuite name="cli">
-            <directory>cli_test</directory>
-            <directory suffix=".phpt">cli_test/Integration</directory>
+            <directory>tests/Unit/Framework</directory>
         </testsuite>
     </testsuites>
 

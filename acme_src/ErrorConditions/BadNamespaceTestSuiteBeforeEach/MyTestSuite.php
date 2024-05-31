@@ -2,8 +2,8 @@
 
 namespace Acme\DemoSuites\ErrorConditions\BadNamespaceTestSuiteBeforeEach\IntentionallyBad;
 
-use Cspray\Labrador\AsyncUnit\Attribute\BeforeEach;
-use Cspray\Labrador\AsyncUnit\TestSuite;
+use Labrador\AsyncUnit\Framework\Attribute\BeforeEach;
+use Labrador\AsyncUnit\Framework\TestSuite;
 
 class MyTestSuite extends TestSuite {
 

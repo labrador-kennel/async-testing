@@ -2,19 +2,19 @@
 
 namespace Acme\DemoSuites\ExplicitTestSuite\BeforeEachTestSuiteHook;
 
-use Cspray\Labrador\AsyncUnit\Attribute\Test;
-use Cspray\Labrador\AsyncUnit\TestCase;
+use Labrador\AsyncUnit\Framework\Attribute\Test;
+use Labrador\AsyncUnit\Framework\TestCase;
 
 class FirstTestCase extends TestCase {
 
     #[Test]
     public function testSomething() : void {
-        $this->assert()->stringEquals('foo', 'foo');
+        $this->assert->stringEquals('foo', 'foo');
     }
 
     #[Test]
     public function testSomethingElse() : void {
-        $this->assert()->stringEquals('bar', 'bar');
+        $this->assert->stringEquals('bar', 'bar');
     }
 
     /**
@@ -22,7 +22,7 @@ class FirstTestCase extends TestCase {
      */
     #[Test]
     public function testItAgain() : void {
-        $this->assert()->stringEquals('baz', 'baz');
+        $this->assert->stringEquals('baz', 'baz');
     }
 
 }

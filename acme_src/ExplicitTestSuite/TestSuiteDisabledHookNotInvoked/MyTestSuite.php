@@ -2,14 +2,14 @@
 
 namespace Acme\DemoSuites\ExplicitTestSuite\TestSuiteDisabledHookNotInvoked;
 
-use Cspray\Labrador\AsyncUnit\Attribute\AfterAll;
-use Cspray\Labrador\AsyncUnit\Attribute\AfterEach;
-use Cspray\Labrador\AsyncUnit\Attribute\AfterEachTest;
-use Cspray\Labrador\AsyncUnit\Attribute\BeforeAll;
-use Cspray\Labrador\AsyncUnit\Attribute\BeforeEach;
-use Cspray\Labrador\AsyncUnit\Attribute\BeforeEachTest;
-use Cspray\Labrador\AsyncUnit\Attribute\Disabled;
-use Cspray\Labrador\AsyncUnit\TestSuite;
+use Labrador\AsyncUnit\Framework\Attribute\AfterAll;
+use Labrador\AsyncUnit\Framework\Attribute\AfterEach;
+use Labrador\AsyncUnit\Framework\Attribute\AfterEachTest;
+use Labrador\AsyncUnit\Framework\Attribute\BeforeAll;
+use Labrador\AsyncUnit\Framework\Attribute\BeforeEach;
+use Labrador\AsyncUnit\Framework\Attribute\BeforeEachTest;
+use Labrador\AsyncUnit\Framework\Attribute\Disabled;
+use Labrador\AsyncUnit\Framework\TestSuite;
 
 #[Disabled]
 class MyTestSuite extends TestSuite {

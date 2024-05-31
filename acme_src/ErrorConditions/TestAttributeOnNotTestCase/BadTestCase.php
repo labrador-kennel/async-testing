@@ -2,7 +2,7 @@
 
 namespace Acme\DemoSuites\ErrorConditions\TestAttributeOnNotTestCase;
 
-use Cspray\Labrador\AsyncUnit\Attribute\Test;
+use Labrador\AsyncUnit\Framework\Attribute\Test;
 
 class BadTestCase {
 

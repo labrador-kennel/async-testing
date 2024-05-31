@@ -3,8 +3,8 @@
 namespace Acme\DemoSuites\ImplicitDefaultTestSuite\HandleNonPhpFiles;
 
 use Amp\Future;
-use Cspray\Labrador\AsyncUnit\Attribute\Test;
-use Cspray\Labrador\AsyncUnit\TestCase;
+use Labrador\AsyncUnit\Framework\Attribute\Test;
+use Labrador\AsyncUnit\Framework\TestCase;
 
 class MyTestCase extends TestCase {
 

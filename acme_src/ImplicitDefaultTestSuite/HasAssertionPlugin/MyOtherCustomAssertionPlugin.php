@@ -3,9 +3,9 @@
 namespace Acme\DemoSuites\ImplicitDefaultTestSuite\HasAssertionPlugin;
 
 use Countable;
-use Cspray\Labrador\AsyncUnit\Assertion\AssertIsTrue;
-use Cspray\Labrador\AsyncUnit\Context\CustomAssertionContext;
-use Cspray\Labrador\AsyncUnit\CustomAssertionPlugin;
+use Labrador\AsyncUnit\Framework\Assertion\AssertIsTrue;
+use Labrador\AsyncUnit\Framework\Context\CustomAssertionContext;
+use Labrador\AsyncUnit\Framework\Plugin\CustomAssertionPlugin;
 use Stringable;
 
 class MyOtherCustomAssertionPlugin implements Countable, Stringable, CustomAssertionPlugin {

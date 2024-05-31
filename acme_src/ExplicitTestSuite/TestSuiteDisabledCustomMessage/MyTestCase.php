@@ -4,9 +4,9 @@
 namespace Acme\DemoSuites\ExplicitTestSuite\TestSuiteDisabledCustomMessage;
 
 
-use Cspray\Labrador\AsyncUnit\Attribute\Test;
-use Cspray\Labrador\AsyncUnit\Attribute\AttachToTestSuite;
-use Cspray\Labrador\AsyncUnit\TestCase;
+use Labrador\AsyncUnit\Framework\Attribute\Test;
+use Labrador\AsyncUnit\Framework\Attribute\AttachToTestSuite;
+use Labrador\AsyncUnit\Framework\TestCase;
 
 #[AttachToTestSuite(MyTestSuite::class)]
 class MyTestCase extends TestCase {

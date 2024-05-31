@@ -2,10 +2,10 @@
 
 namespace Acme\DemoSuites\ExplicitTestSuite\TestCaseAfterAllHasTestSuiteState;
 
-use Cspray\Labrador\AsyncUnit\Attribute\AfterAll;
-use Cspray\Labrador\AsyncUnit\Attribute\Test;
-use Cspray\Labrador\AsyncUnit\TestCase;
-use Cspray\Labrador\AsyncUnit\TestSuite;
+use Labrador\AsyncUnit\Framework\Attribute\AfterAll;
+use Labrador\AsyncUnit\Framework\Attribute\Test;
+use Labrador\AsyncUnit\Framework\TestCase;
+use Labrador\AsyncUnit\Framework\TestSuite;
 
 class MyTestCase extends TestCase {
 
@@ -18,7 +18,7 @@ class MyTestCase extends TestCase {
 
     #[Test]
     public function checkState() {
-        $this->assert()->isNull(self::$state);
+        $this->assert->isNull(self::$state);
     }
 
     public function getState() : ?string {

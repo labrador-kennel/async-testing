@@ -2,10 +2,10 @@
 
 namespace Acme\DemoSuites\ImplicitDefaultTestSuite\KitchenSink\WhatAbout;
 
-use Cspray\Labrador\AsyncUnit\Attribute\AttachToTestSuite;
-use Cspray\Labrador\AsyncUnit\Attribute\Disabled;
-use Cspray\Labrador\AsyncUnit\Attribute\Test;
-use Cspray\Labrador\AsyncUnit\TestCase;
+use Labrador\AsyncUnit\Framework\Attribute\AttachToTestSuite;
+use Labrador\AsyncUnit\Framework\Attribute\Disabled;
+use Labrador\AsyncUnit\Framework\Attribute\Test;
+use Labrador\AsyncUnit\Framework\TestCase;
 
 #[AttachToTestSuite(PotatoTestSuite::class)]
 class BilboTestCase extends TestCase {

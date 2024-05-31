@@ -2,8 +2,8 @@
 
 namespace Acme\DemoSuites\ExplicitTestSuite\TestSuiteDisabledCustomMessage;
 
-use Cspray\Labrador\AsyncUnit\Attribute\Disabled;
-use Cspray\Labrador\AsyncUnit\TestSuite;
+use Labrador\AsyncUnit\Framework\Attribute\Disabled;
+use Labrador\AsyncUnit\Framework\TestSuite;
 
 #[Disabled('The AttachToTestSuite is disabled')]
 class MyTestSuite extends TestSuite {

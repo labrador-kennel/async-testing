@@ -2,9 +2,9 @@
 
 namespace Acme\DemoSuites\ImplicitDefaultTestSuite\HasDataProvider;
 
-use Cspray\Labrador\AsyncUnit\Attribute\DataProvider;
-use Cspray\Labrador\AsyncUnit\Attribute\Test;
-use Cspray\Labrador\AsyncUnit\TestCase;
+use Labrador\AsyncUnit\Framework\Attribute\DataProvider;
+use Labrador\AsyncUnit\Framework\Attribute\Test;
+use Labrador\AsyncUnit\Framework\TestCase;
 
 class MyTestCase extends TestCase {
 
@@ -22,7 +22,7 @@ class MyTestCase extends TestCase {
     #[DataProvider('myDataProvider')]
     public function ensureStringsEqual(string $expected, string $actual) : void {
         $this->counter++;
-        $this->assert()->stringEquals($expected, $actual);
+        $this->assert->stringEquals($expected, $actual);
     }
 
     public function getCounter() : int {

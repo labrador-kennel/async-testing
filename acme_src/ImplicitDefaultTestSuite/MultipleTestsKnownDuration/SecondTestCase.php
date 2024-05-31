@@ -7,8 +7,8 @@ namespace Acme\DemoSuites\ImplicitDefaultTestSuite\MultipleTestsKnownDuration;
 use Amp\Delayed;
 use Amp\Future;
 use Amp\Success;
-use Cspray\Labrador\AsyncUnit\Attribute\Test;
-use Cspray\Labrador\AsyncUnit\TestCase;
+use Labrador\AsyncUnit\Framework\Attribute\Test;
+use Labrador\AsyncUnit\Framework\TestCase;
 use function Amp\delay;
 
 class SecondTestCase extends TestCase {
@@ -22,7 +22,7 @@ class SecondTestCase extends TestCase {
     #[Test]
     public function checkTwo() {
         delay(0.1);
-        $this->assert()->isTrue(true);
+        $this->assert->isTrue(true);
     }
 
 }

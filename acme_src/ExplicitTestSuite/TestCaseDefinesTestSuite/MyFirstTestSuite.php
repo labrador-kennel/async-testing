@@ -2,6 +2,6 @@
 
 namespace Acme\DemoSuites\ExplicitTestSuite\TestCaseDefinesTestSuite;
 
-use Cspray\Labrador\AsyncUnit\TestSuite;
+use Labrador\AsyncUnit\Framework\TestSuite;
 
 class MyFirstTestSuite extends TestSuite {}

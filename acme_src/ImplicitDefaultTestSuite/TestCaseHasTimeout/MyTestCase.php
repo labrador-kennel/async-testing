@@ -2,9 +2,9 @@
 
 namespace Acme\DemoSuites\ImplicitDefaultTestSuite\TestCaseHasTimeout;
 
-use Cspray\Labrador\AsyncUnit\Attribute\Test;
-use Cspray\Labrador\AsyncUnit\Attribute\Timeout;
-use Cspray\Labrador\AsyncUnit\TestCase;
+use Labrador\AsyncUnit\Framework\Attribute\Test;
+use Labrador\AsyncUnit\Framework\Attribute\Timeout;
+use Labrador\AsyncUnit\Framework\TestCase;
 
 #[Timeout(150)]
 class MyTestCase extends TestCase {

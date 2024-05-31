@@ -3,15 +3,15 @@
 namespace Acme\DemoSuites\ImplicitDefaultTestSuite\ExtendedTestCases;
 
 use Amp\Future;
-use Cspray\Labrador\AsyncUnit\Attribute\Test;
+use Labrador\AsyncUnit\Framework\Attribute\Test;
 
 class ThirdTestCase extends AbstractSecondTestCase {
 
     #[Test]
     public function thirdEnsureSomething() {
-        $this->asyncAssert()->arrayEquals([1,2,3], Future::complete([1,2,3]));
-        $this->assert()->stringEquals('bar', 'bar');
-        $this->assert()->isNull(null);
+        $this->assert->arrayEquals([1,2,3], [1,2,3]);
+        $this->assert->stringEquals('bar', 'bar');
+        $this->assert->isNull(null);
     }
 
 }

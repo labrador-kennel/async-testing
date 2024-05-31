@@ -2,7 +2,7 @@
 
 namespace Acme\DemoSuites\ExplicitTestSuite\TestSuiteDefinesNamespaceToAttach;
 
-use Cspray\Labrador\AsyncUnit\TestSuite;
+use Labrador\AsyncUnit\Framework\TestSuite;
 
 class MyTestSuite extends TestSuite {
 

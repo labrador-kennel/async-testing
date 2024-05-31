@@ -2,9 +2,9 @@
 
 namespace Acme\DemoSuites\ExplicitTestSuite\ExceptionThrowingTestSuiteBeforeAll;
 
-use Cspray\Labrador\AsyncUnit\Attribute\DefaultTestSuite;
-use Cspray\Labrador\AsyncUnit\TestSuite;
-use Cspray\Labrador\AsyncUnit\Attribute\BeforeAll;
+use Labrador\AsyncUnit\Framework\Attribute\DefaultTestSuite;
+use Labrador\AsyncUnit\Framework\TestSuite;
+use Labrador\AsyncUnit\Framework\Attribute\BeforeAll;
 
 #[DefaultTestSuite]
 class MyTestSuite extends TestSuite {

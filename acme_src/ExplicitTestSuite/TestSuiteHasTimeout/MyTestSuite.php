@@ -2,9 +2,9 @@
 
 namespace Acme\DemoSuites\ExplicitTestSuite\TestSuiteHasTimeout;
 
-use Cspray\Labrador\AsyncUnit\Attribute\DefaultTestSuite;
-use Cspray\Labrador\AsyncUnit\Attribute\Timeout;
-use Cspray\Labrador\AsyncUnit\TestSuite;
+use Labrador\AsyncUnit\Framework\Attribute\DefaultTestSuite;
+use Labrador\AsyncUnit\Framework\Attribute\Timeout;
+use Labrador\AsyncUnit\Framework\TestSuite;
 
 #[Timeout(125)]
 #[DefaultTestSuite]

@@ -2,14 +2,14 @@
 
 namespace Acme\DemoSuites\ImplicitDefaultTestSuite\WithAsyncUnitConfig\tests\Foo;
 
-use Cspray\Labrador\AsyncUnit\Attribute\Test;
-use Cspray\Labrador\AsyncUnit\TestCase;
+use Labrador\AsyncUnit\Framework\Attribute\Test;
+use Labrador\AsyncUnit\Framework\TestCase;
 
 class BarTestCase extends TestCase {
 
     #[Test]
     public function ensureStringEquals() {
-        $this->assert()->not()->stringEquals('foo', 'bar');
+        $this->assert->not()->stringEquals('foo', 'bar');
     }
 
 }

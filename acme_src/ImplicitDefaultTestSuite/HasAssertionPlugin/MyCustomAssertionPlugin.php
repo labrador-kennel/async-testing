@@ -3,8 +3,8 @@
 
 namespace Acme\DemoSuites\ImplicitDefaultTestSuite\HasAssertionPlugin;
 
-use Cspray\Labrador\AsyncUnit\Context\CustomAssertionContext;
-use Cspray\Labrador\AsyncUnit\CustomAssertionPlugin;
+use Labrador\AsyncUnit\Framework\Context\CustomAssertionContext;
+use Labrador\AsyncUnit\Framework\Plugin\CustomAssertionPlugin;
 
 class MyCustomAssertionPlugin implements CustomAssertionPlugin {
 

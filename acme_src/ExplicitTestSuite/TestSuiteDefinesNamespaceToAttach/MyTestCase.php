@@ -2,14 +2,14 @@
 
 namespace Acme\DemoSuites\ExplicitTestSuite\TestSuiteDefinesNamespaceToAttach;
 
-use Cspray\Labrador\AsyncUnit\Attribute\Test;
-use Cspray\Labrador\AsyncUnit\TestCase;
+use Labrador\AsyncUnit\Framework\Attribute\Test;
+use Labrador\AsyncUnit\Framework\TestCase;
 
 class MyTestCase extends TestCase {
 
     #[Test]
     public function testSomething() {
-        $this->assert()->stringEquals('AsyncUnit', 'AsyncUnit');
+        $this->assert->stringEquals('AsyncUnit', 'AsyncUnit');
     }
 
 }

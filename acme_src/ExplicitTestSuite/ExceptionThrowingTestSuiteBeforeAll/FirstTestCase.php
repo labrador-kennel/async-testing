@@ -2,14 +2,14 @@
 
 namespace Acme\DemoSuites\ExplicitTestSuite\ExceptionThrowingTestSuiteBeforeAll;
 
-use Cspray\Labrador\AsyncUnit\Attribute\Test;
-use Cspray\Labrador\AsyncUnit\TestCase;
+use Labrador\AsyncUnit\Framework\Attribute\Test;
+use Labrador\AsyncUnit\Framework\TestCase;
 
 class FirstTestCase extends TestCase {
 
     #[Test]
     public function ensureSomething() {
-        $this->assert()->isTrue(true);
+        $this->assert->isTrue(true);
     }
 
 }

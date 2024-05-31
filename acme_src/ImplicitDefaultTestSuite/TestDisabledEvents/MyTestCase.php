@@ -3,21 +3,20 @@
 namespace Acme\DemoSuites\ImplicitDefaultTestSuite\TestDisabledEvents;
 
 use Amp\Future;
-use Amp\Success;
-use Cspray\Labrador\AsyncUnit\Attribute\Disabled;
-use Cspray\Labrador\AsyncUnit\Attribute\Test;
-use Cspray\Labrador\AsyncUnit\TestCase;
+use Labrador\AsyncUnit\Framework\Attribute\Disabled;
+use Labrador\AsyncUnit\Framework\Attribute\Test;
+use Labrador\AsyncUnit\Framework\TestCase;
 
 class MyTestCase extends TestCase {
 
     #[Test]
     public function testFailingFloatEquals() {
-        $this->asyncAssert()->not()->floatEquals(3.14, Future::complete(3.14));
+        $this->assert->not()->floatEquals(3.14, 3.14);
     }
 
     #[Test]
     public function testIsTrue() {
-        $this->asyncAssert()->isTrue(Future::complete(true));
+        $this->assert->isTrue(true);
     }
 
     #[Test]

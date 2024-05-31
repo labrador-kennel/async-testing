@@ -2,7 +2,7 @@
 
 namespace Acme\DemoSuites\ImplicitDefaultTestSuite\KitchenSink;
 
-use Cspray\Labrador\AsyncUnit\TestSuite;
+use Labrador\AsyncUnit\Framework\TestSuite;
 
 class FirstTestSuite extends TestSuite {
 

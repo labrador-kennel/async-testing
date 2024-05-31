@@ -5,14 +5,14 @@ namespace Acme\DemoSuites\ImplicitDefaultTestSuite\ExtendedTestCases;
 
 
 use Amp\Future;
-use Cspray\Labrador\AsyncUnit\Attribute\Test;
+use Labrador\AsyncUnit\Framework\Attribute\Test;
 
 abstract class AbstractSecondTestCase extends FirstTestCase {
 
     #[Test]
     public function secondEnsureSomething() {
-        $this->assert()->intEquals(42, 42);
-        $this->asyncAssert()->isFalse(Future::complete(false));
+        $this->assert->intEquals(42, 42);
+        $this->assert->isFalse(false);
     }
 
 }
