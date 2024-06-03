@@ -2,10 +2,11 @@
 
 namespace Acme\DemoSuites\ImplicitDefaultTestSuite\KitchenSink\SecondBreakfast;
 
+use Amp\Future;
 use Amp\Success;
-use Cspray\Labrador\AsyncUnit\Attribute\DataProvider;
-use Cspray\Labrador\AsyncUnit\Attribute\Test;
-use Cspray\Labrador\AsyncUnit\TestCase;
+use Labrador\AsyncUnit\Framework\Attribute\DataProvider;
+use Labrador\AsyncUnit\Framework\Attribute\Test;
+use Labrador\AsyncUnit\Framework\TestCase;
 
 class FoodAndBeverageTestCase extends TestCase {
 
@@ -21,7 +22,7 @@ class FoodAndBeverageTestCase extends TestCase {
     #[Test]
     #[DataProvider('foodProvider')]
     public function checkFood(string $a, string $b) {
-        yield $this->asyncAssert()->stringEquals($a, new Success($b));
+        $this->assert->stringEquals($a, $b);
     }
 
 }

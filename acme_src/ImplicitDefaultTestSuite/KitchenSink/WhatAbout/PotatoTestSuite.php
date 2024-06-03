@@ -2,8 +2,8 @@
 
 namespace Acme\DemoSuites\ImplicitDefaultTestSuite\KitchenSink\WhatAbout;
 
-use Cspray\Labrador\AsyncUnit\Attribute\BeforeAll;
-use Cspray\Labrador\AsyncUnit\TestSuite;
+use Labrador\AsyncUnit\Framework\Attribute\BeforeAll;
+use Labrador\AsyncUnit\Framework\TestSuite;
 
 class PotatoTestSuite extends TestSuite {
 

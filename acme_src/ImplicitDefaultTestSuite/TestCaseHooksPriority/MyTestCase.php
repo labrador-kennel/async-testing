@@ -2,12 +2,12 @@
 
 namespace Acme\DemoSuites\ImplicitDefaultTestSuite\TestCaseHooksPriority;
 
-use Cspray\Labrador\AsyncUnit\Attribute\AfterAll;
-use Cspray\Labrador\AsyncUnit\Attribute\AfterEach;
-use Cspray\Labrador\AsyncUnit\Attribute\BeforeAll;
-use Cspray\Labrador\AsyncUnit\Attribute\BeforeEach;
-use Cspray\Labrador\AsyncUnit\Attribute\Test;
-use Cspray\Labrador\AsyncUnit\TestCase;
+use Labrador\AsyncUnit\Framework\Attribute\AfterAll;
+use Labrador\AsyncUnit\Framework\Attribute\AfterEach;
+use Labrador\AsyncUnit\Framework\Attribute\BeforeAll;
+use Labrador\AsyncUnit\Framework\Attribute\BeforeEach;
+use Labrador\AsyncUnit\Framework\Attribute\Test;
+use Labrador\AsyncUnit\Framework\TestCase;
 
 class MyTestCase extends TestCase {
 
@@ -47,7 +47,7 @@ class MyTestCase extends TestCase {
 
     #[Test]
     public function testSomething() {
-         $this->assert()->stringEquals('AsyncUnit', 'AsyncUnit');
+         $this->assert->stringEquals('AsyncUnit', 'AsyncUnit');
     }
 
     #[AfterEach(1)]

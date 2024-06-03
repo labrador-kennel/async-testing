@@ -2,14 +2,14 @@
 
 namespace Acme\DemoSuites\ImplicitDefaultTestSuite\ExtendedTestCases;
 
-use Cspray\Labrador\AsyncUnit\Attribute\Test;
-use Cspray\Labrador\AsyncUnit\TestCase;
+use Labrador\AsyncUnit\Framework\Attribute\Test;
+use Labrador\AsyncUnit\Framework\TestCase;
 
 class FirstTestCase extends TestCase {
 
     #[Test]
     public function firstEnsureSomething() {
-        $this->assert()->stringEquals('foo', 'foo');
+        $this->assert->stringEquals('foo', 'foo');
     }
 
 }

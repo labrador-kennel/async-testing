@@ -7,20 +7,26 @@ on:
     branches: [ main ]
 
 jobs:
-  build-test:
+  unit-test:
 
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
-      - name: Composer 8
-        uses: php-actions/composer@v5
+        uses: actions/checkout@v3
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
         with:
-          php_version: 8.2
-      - name: PHP 8 tests
-        uses: php-actions/phpunit@v2
-        with:
-          version: 9
-          php_version: 8.2
-          memory_limit: 1G
+          php-version: 8.2
+          extensions: xdebug
+          tools: composer:2
+      - name: Setup problem matchers for PHP
+        run: echo "::add-matcher::${{ runner.tool_cache }}/php.json"
+      - name: Setup problem matchers for PHPUnit
+        run: echo "::add-matcher::${{ runner.tool_cache }}/phpunit.json"
+      - name: Composer (AsyncUnit & Tools)
+        run: composer install
+      - name: Unit Testing
+        env:
+          XDEBUG_MODE: coverage
+        run: ./vendor/bin/phpunit

@@ -2,9 +2,9 @@
 
 namespace Acme\DemoSuites\ErrorConditions\AfterAllNonStaticMethod;
 
-use Cspray\Labrador\AsyncUnit\Attribute\AfterAll;
-use Cspray\Labrador\AsyncUnit\Attribute\Test;
-use Cspray\Labrador\AsyncUnit\TestCase;
+use Labrador\AsyncUnit\Framework\Attribute\AfterAll;
+use Labrador\AsyncUnit\Framework\Attribute\Test;
+use Labrador\AsyncUnit\Framework\TestCase;
 
 class BadTestCase extends TestCase {
 

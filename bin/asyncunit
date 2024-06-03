@@ -8,19 +8,17 @@ $cwd = getcwd();
 require_once $cwd . '/vendor/autoload.php';
 
 use Cspray\Labrador\AsyncUnitCli\AsyncUnitConsoleApplication;
-use Cspray\Labrador\EnvironmentType;
-use Cspray\Labrador\StandardEnvironment;
+use Labrador\AsyncEvent\AmpEventEmitter;
 use Psr\Log\NullLogger;
 use function Amp\ByteStream\getStdout;
 use function Amp\File\filesystem;
 
-$environment = new StandardEnvironment(EnvironmentType::Development());
 $logger = new NullLogger();
 $configurationFactory = new JsonConfigurationFactory();
 
 $application = new AsyncUnitConsoleApplication(
-    $environment,
     $logger,
+    new AmpEventEmitter(),
     filesystem(),
     $configurationFactory,
     getStdout(),

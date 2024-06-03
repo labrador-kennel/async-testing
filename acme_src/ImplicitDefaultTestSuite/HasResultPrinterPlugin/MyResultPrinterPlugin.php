@@ -2,19 +2,29 @@
 
 namespace Acme\DemoSuites\ImplicitDefaultTestSuite\HasResultPrinterPlugin;
 
-use Amp\ByteStream\OutputStream;
-use Cspray\Labrador\AsyncEvent\EventEmitter;
-use Cspray\Labrador\AsyncUnit\ResultPrinterPlugin;
-use Cspray\Labrador\AsyncUnit\Event\TestProcessedEvent;
-use Cspray\Labrador\AsyncUnit\Events;
+use Amp\ByteStream\WritableStream;
+use Amp\Future;
+use Labrador\AsyncEvent\Emitter;
+use Labrador\AsyncEvent\Event;
+use Labrador\AsyncEvent\Listener;
+use Labrador\AsyncUnit\Framework\Event\Events;
+use Labrador\AsyncUnit\Framework\Plugin\ResultPrinterPlugin;
+use Labrador\CompositeFuture\CompositeFuture;
 
 class MyResultPrinterPlugin implements ResultPrinterPlugin {
 
-    public function registerEvents(EventEmitter $emitter, OutputStream $output) : void {
-        $emitter->on(Events::TEST_PROCESSED, function(TestProcessedEvent $event) use($output) {
-            yield $output->write($event->getTarget()->getTestCase()::class . "\n");
-            yield $output->write($event->getTarget()->getTestMethod() . "\n");
-        });
+    public function registerEvents(Emitter $emitter, WritableStream $output) : void {
+        $listener = new class($output) implements Listener {
+            public function __construct(
+                private readonly WritableStream $output
+            ) {}
+
+            public function handle(Event $event) : Future|CompositeFuture|null {
+                $this->output->write($event->payload()->getTestCase()::class . "\n");
+                $this->output->write($event->payload()->getTestMethod() . "\n");
+            }
+        };
+        $emitter->register(Events::TEST_PROCESSED, $listener);
     }
 
 }

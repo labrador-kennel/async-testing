@@ -2,15 +2,15 @@
 
 namespace Acme\DemoSuites\ImplicitDefaultTestSuite\HandleNonPhpFiles;
 
-use Amp\Success;
-use Cspray\Labrador\AsyncUnit\Attribute\Test;
-use Cspray\Labrador\AsyncUnit\TestCase;
+use Amp\Future;
+use Labrador\AsyncUnit\Framework\Attribute\Test;
+use Labrador\AsyncUnit\Framework\TestCase;
 
 class MyTestCase extends TestCase {
 
     #[Test]
     public function checkAsyncNull() {
-        yield $this->asyncAssert()->isNull(new Success(null));
+        $this->asyncAssert()->isNull(Future::complete());
     }
 
 }

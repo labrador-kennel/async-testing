@@ -2,7 +2,7 @@
 
 namespace Cspray\Labrador\AsyncUnitCli\Command;
 
-use Amp\Success;
+use Amp\Future;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Tester\CommandTester;
 
@@ -10,15 +10,14 @@ class GenerateConfigurationCommandTest extends BaseCommandTest {
 
     public function testGenerateFileDoesNotExist() {
         $application = $this->createApplication($configPath = __DIR__ . '/async-unit.json');
-        $this->filesystem->expects($this->once())
-            ->method('isfile')
+        $this->driver->expects($this->once())
+            ->method('getStatus')
             ->with($configPath)
-            ->willReturn(new Success(false));
+            ->willReturn(null);
 
-        $this->filesystem->expects($this->once())
-            ->method('put')
-            ->with($configPath, $this->getDefaultConfigurationJson())
-            ->willReturn(new Success());
+        $this->driver->expects($this->once())
+            ->method('write')
+            ->with($configPath, $this->getDefaultConfigurationJson());
 
         $command = $application->find('config:generate');
         $commandTester = new CommandTester($command);
@@ -33,16 +32,15 @@ shell;
     }
 
     public function testGenerateFileDoesNotExistOverridesDefaultLocation() {
-        $application = $this->createApplication($configPath = __DIR__ . '/async-unit.json');
-        $this->filesystem->expects($this->once())
-            ->method('isfile')
+        $application = $this->createApplication(__DIR__ . '/async-unit.json');
+        $this->driver->expects($this->once())
+            ->method('getStatus')
             ->with('/my/overridden/path')
-            ->willReturn(new Success(false));
+            ->willReturn(null);
 
-        $this->filesystem->expects($this->once())
-            ->method('put')
-            ->with('/my/overridden/path', $this->getDefaultConfigurationJson())
-            ->willReturn(new Success());
+        $this->driver->expects($this->once())
+            ->method('write')
+            ->with('/my/overridden/path', $this->getDefaultConfigurationJson());
 
         $command = $application->find('config:generate');
         $commandTester = new CommandTester($command);
@@ -60,12 +58,12 @@ shell;
 
     public function testGenerateFileDoesExistNoReplace() {
         $application = $this->createApplication($configPath = __DIR__ . '/async-unit.json');
-        $this->filesystem->expects($this->once())
-            ->method('isfile')
+        $this->driver->expects($this->once())
+            ->method('getStatus')
             ->with($configPath)
-            ->willReturn(new Success(true));
+            ->willReturn(['mode' => 0100000]);
 
-        $this->filesystem->expects($this->never())->method('put');
+        $this->driver->expects($this->never())->method('write');
 
         $command = $application->find('config:generate');
         $commandTester = new CommandTester($command);
@@ -84,20 +82,18 @@ shell;
 
     public function testGenerateFilesDoesExistWillReplace() {
         $application = $this->createApplication($configPath = __DIR__ . '/async-unit.json');
-        $this->filesystem->expects($this->once())
-            ->method('isfile')
+        $this->driver->expects($this->once())
+            ->method('getStatus')
             ->with($configPath)
-            ->willReturn(new Success(true));
+            ->willReturn(['mode' => 0100000]);
 
-        $this->filesystem->expects($this->once())
-            ->method('rename')
-            ->with($configPath, $configPath . '.bak')
-            ->willReturn(new Success());
+        $this->driver->expects($this->once())
+            ->method('move')
+            ->with($configPath, $configPath . '.bak');
 
-        $this->filesystem->expects($this->once())
-            ->method('put')
-            ->with($configPath, $this->getDefaultConfigurationJson())
-            ->willReturn(new Success());
+        $this->driver->expects($this->once())
+            ->method('write')
+            ->with($configPath, $this->getDefaultConfigurationJson());
 
         $command = $application->find('config:generate');
         $commandTester = new CommandTester($command);

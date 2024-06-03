@@ -2,8 +2,8 @@
 
 namespace Acme\DemoSuites\ErrorConditions\BeforeAllAttributeOnNotTestCaseOrTestSuite;
 
-use Cspray\Labrador\AsyncUnit\Attribute\BeforeAll;
-use Cspray\Labrador\AsyncUnit\Attribute\Test;
+use Labrador\AsyncUnit\Framework\Attribute\BeforeAll;
+use Labrador\AsyncUnit\Framework\Attribute\Test;
 
 class BadTestCase {
 

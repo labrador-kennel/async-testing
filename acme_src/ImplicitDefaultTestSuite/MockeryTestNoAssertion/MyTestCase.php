@@ -2,23 +2,21 @@
 
 namespace Acme\DemoSuites\ImplicitDefaultTestSuite\MockeryTestNoAssertion;
 
-use Amp\Success;
-use Cspray\Labrador\Application;
-use Cspray\Labrador\AsyncUnit\Attribute\Test;
-use Cspray\Labrador\AsyncUnit\TestCase;
-use Generator;
+use Labrador\AsyncUnit\Framework\Attribute\Test;
+use Labrador\AsyncUnit\Framework\Configuration\Configuration;
+use Labrador\AsyncUnit\Framework\TestCase;
 use Mockery\MockInterface;
 
 class MyTestCase extends TestCase {
 
     #[Test]
-    public function checkMockExpectations() : Generator {
+    public function checkMockExpectations() : void {
         /** @var MockInterface $mock */
-        $mock = $this->mocks()->createMock(Application::class);
+        $mock = $this->mocks()->createMock(Configuration::class);
 
-        $mock->expects()->start()->andReturn(new Success());
+        $mock->expects()->getTestDirectories()->andReturn([]);
 
-        yield $mock->start();
+        $mock->getTestDirectories();
     }
 
 }

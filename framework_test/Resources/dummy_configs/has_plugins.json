@@ -1,5 +1,0 @@
-{
-  "testDirs": ["."],
-  "resultPrinter": "Cspray\\Labrador\\AsyncUnitCli\\DefaultResultPrinter",
-  "plugins": ["FooBar"]
-}

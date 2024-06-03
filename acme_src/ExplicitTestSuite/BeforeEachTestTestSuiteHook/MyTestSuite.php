@@ -2,9 +2,9 @@
 
 namespace Acme\DemoSuites\ExplicitTestSuite\BeforeEachTestTestSuiteHook;
 
-use Cspray\Labrador\AsyncUnit\Attribute\BeforeEachTest;
-use Cspray\Labrador\AsyncUnit\Attribute\DefaultTestSuite;
-use Cspray\Labrador\AsyncUnit\TestSuite;
+use Labrador\AsyncUnit\Framework\Attribute\BeforeEachTest;
+use Labrador\AsyncUnit\Framework\Attribute\DefaultTestSuite;
+use Labrador\AsyncUnit\Framework\TestSuite;
 
 #[DefaultTestSuite]
 class MyTestSuite extends TestSuite {

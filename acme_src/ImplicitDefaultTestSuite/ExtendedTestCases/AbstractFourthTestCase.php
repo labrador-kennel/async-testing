@@ -2,16 +2,16 @@
 
 namespace Acme\DemoSuites\ImplicitDefaultTestSuite\ExtendedTestCases;
 
-use Cspray\Labrador\AsyncUnit\Attribute\Test;
+use Labrador\AsyncUnit\Framework\Attribute\Test;
 
 abstract class AbstractFourthTestCase extends ThirdTestCase {
 
     #[Test]
     public function fourthEnsureSomething() {
-        $this->assert()->isNull(null);
-        $this->assert()->isFalse(false);
-        $this->assert()->isTrue(true);
-        $this->assert()->stringEquals('AsyncUnit', 'AsyncUnit');
+        $this->assert->isNull(null);
+        $this->assert->isFalse(false);
+        $this->assert->isTrue(true);
+        $this->assert->stringEquals('AsyncUnit', 'AsyncUnit');
     }
 
 }

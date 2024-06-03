@@ -2,8 +2,8 @@
 
 namespace Acme\DemoSuites\ErrorConditions\AfterEachAttributeOnNotTestCaseOrTestSuite;
 
-use Cspray\Labrador\AsyncUnit\Attribute\AfterAll;
-use Cspray\Labrador\AsyncUnit\Attribute\AfterEach;
+use Labrador\AsyncUnit\Framework\Attribute\AfterAll;
+use Labrador\AsyncUnit\Framework\Attribute\AfterEach;
 
 class BadTestCase {
 

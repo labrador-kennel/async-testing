@@ -3,9 +3,11 @@
 namespace Acme\DemoSuites\ImplicitDefaultTestSuite\MultipleTest;
 
 use Amp\Delayed;
-use Cspray\Labrador\AsyncUnit\Attribute\Test;
-use Cspray\Labrador\AsyncUnit\TestCase;
+use Labrador\AsyncUnit\Framework\Attribute\Test;
+use Labrador\AsyncUnit\Framework\TestCase;
+use function Amp\async;
 use function Amp\call;
+use function Amp\delay;
 
 class MyTestCase extends TestCase {
 
@@ -13,22 +15,22 @@ class MyTestCase extends TestCase {
 
     #[Test]
     public function ensureSomethingHappens() {
-        yield new Delayed(100);
+        delay(0.100);
         $this->invoked[] = __METHOD__;
-        $this->assert()->stringEquals('foo', 'foo');
+        $this->assert->stringEquals('foo', 'foo');
     }
 
     #[Test]
     public function ensureSomethingHappensTwice() {
         $this->invoked[] = __METHOD__;
-        $this->assert()->not()->stringEquals('AsyncUnit', 'PHPUnit');
+        $this->assert->not()->stringEquals('AsyncUnit', 'PHPUnit');
     }
 
     #[Test]
     public function ensureSomethingHappensThreeTimes() {
-        return call(function() {
+        return async(function() {
             $this->invoked[] = self::class . '::ensureSomethingHappensThreeTimes';
-            $this->assert()->intEquals(42, 42);
+            $this->assert->intEquals(42, 42);
         });
     }
 

@@ -4,16 +4,16 @@
 namespace Acme\DemoSuites\ExplicitTestSuite\TestCaseDefinedAndImplicitDefaultTestSuite;
 
 
-use Cspray\Labrador\AsyncUnit\Attribute\Test;
-use Cspray\Labrador\AsyncUnit\Attribute\AttachToTestSuite;
-use Cspray\Labrador\AsyncUnit\TestCase;
+use Labrador\AsyncUnit\Framework\Attribute\Test;
+use Labrador\AsyncUnit\Framework\Attribute\AttachToTestSuite;
+use Labrador\AsyncUnit\Framework\TestCase;
 
 #[AttachToTestSuite(MyTestSuite::class)]
 class SecondTestCase extends TestCase {
 
     #[Test]
     public function ensureSomething() {
-        $this->assert()->isFalse(false);
+        $this->assert->isFalse(false);
     }
 
 }

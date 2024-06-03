@@ -1,39 +1,36 @@
 {
-  "name": "cspray/labrador-async-unit",
+  "name": "labrador-kennel/async-unit",
   "description": "An async unit and integration testing framework written on top of PHP8",
   "bin": [
     "bin/asyncunit"
   ],
   "require": {
     "php": "^8.2",
-    "amphp/amp": "^2",
-    "nikic/php-parser": "^4.10",
-    "cspray/labrador-async-event": "^2.3",
-    "cspray/labrador": "^3.2",
-    "symfony/console": "^5.2",
+    "amphp/amp": "^3",
+    "amphp/byte-stream": "^v2.0",
+    "amphp/file": "^3.0",
+    "labrador-kennel/async-event": "^4.1",
+    "cspray/labrador-styled-byte-stream": "^0.2",
     "opis/json-schema": "^2.0",
-    "amphp/byte-stream": "^1.8",
-    "cspray/yape": "^3.1",
-    "phpunit/php-timer": "^5.0",
-    "amphp/file": "^1.0",
-    "cspray/labrador-styled-byte-stream": "^0.1.0"
+    "nikic/php-parser": "^4.10",
+    "phpunit/php-timer": "^6.0",
+    "psr/log": "^2.0 || ^3.0"
   },
   "require-dev": {
     "roave/security-advisories": "dev-latest",
-    "phpunit/phpunit": "^9.5",
+    "phpunit/phpunit": "^10",
     "phpspec/prophecy": "^1.13",
-    "mockery/mockery": "^1.4"
+    "mockery/mockery": "^1.4",
+    "psalm/phar": "^5"
   },
   "autoload": {
     "psr-4": {
-      "Cspray\\Labrador\\AsyncUnit\\": "framework_src",
-      "Cspray\\Labrador\\AsyncUnitCli\\": "cli_src"
+      "Labrador\\AsyncUnit\\": "src"
     }
   },
   "autoload-dev": {
     "psr-4": {
-      "Cspray\\Labrador\\AsyncUnit\\": "framework_test",
-      "Cspray\\Labrador\\AsyncUnitCli\\": "cli_test",
+      "Labrador\\AsyncUnit\\Test\\": "tests",
       "Acme\\DemoSuites\\": "acme_src",
       "Acme\\Examples\\SimpleEquals\\": "examples/simple_equals_src",
       "Acme\\Examples\\CustomAssertion\\": "examples/custom_assertion_src",

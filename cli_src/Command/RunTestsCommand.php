@@ -2,9 +2,9 @@
 
 namespace Cspray\Labrador\AsyncUnitCli\Command;
 
-use Amp\File\Driver as FileDriver;
-use Amp\Loop;
+use Amp\File\Filesystem;
 use Cspray\Labrador\AsyncUnit\AsyncUnitFrameworkRunner;
+use Revolt\EventLoop;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputInterface;
@@ -15,7 +15,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 class RunTestsCommand extends AbstractCommand {
 
     public function __construct(
-        private FileDriver $fileDriver,
+        private Filesystem $fileDriver,
         private AsyncUnitFrameworkRunner $frameworkRunner,
         private string $defaultConfigFile
     ) {
@@ -29,31 +29,29 @@ class RunTestsCommand extends AbstractCommand {
     public function execute(InputInterface $input, OutputInterface $output) : int {
         $runTests = true;
         $configPath = $input->getOption('config') ?? $this->defaultConfigFile;
-        Loop::run(function() use($input, $output, &$runTests, $configPath) {
-            if (!yield $this->fileDriver->isfile($configPath)) {
-                $style = new SymfonyStyle($input, $output);
-                $style->writeln($this->getNoDefaultConfigurationMessage());
-                $style->newLine();
+        if (!$this->fileDriver->isFile($configPath)) {
+            $style = new SymfonyStyle($input, $output);
+            $style->writeln($this->getNoDefaultConfigurationMessage());
+            $style->newLine();
 
-                $generateConfig = $this->confirm(
-                    $input,
-                    $output,
-                    'Would you like to run \'config:generate\' now?',
-                    true
-                );
+            $generateConfig = $this->confirm(
+                $input,
+                $output,
+                'Would you like to run \'config:generate\' now?',
+                true
+            );
 
-                if (!$generateConfig) {
-                    $style->writeln('Ok! Exiting.');
-                    $runTests = false;
-                } else {
-                    $generateConfigCommand = $this->getApplication()->find('config:generate');
-                    $args = new ArrayInput([
-                        '--file' => $configPath
-                    ]);
-                    $generateConfigCommand->run($args, $output);
-                }
+            if (!$generateConfig) {
+                $style->writeln('Ok! Exiting.');
+                $runTests = false;
+            } else {
+                $generateConfigCommand = $this->getApplication()->find('config:generate');
+                $args = new ArrayInput([
+                    '--file' => $configPath
+                ]);
+                $generateConfigCommand->run($args, $output);
             }
-        });
+        }
 
         if ($runTests) {
             $this->frameworkRunner->run($configPath);

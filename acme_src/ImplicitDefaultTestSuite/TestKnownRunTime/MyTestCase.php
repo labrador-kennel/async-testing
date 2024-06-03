@@ -2,17 +2,15 @@
 
 namespace Acme\DemoSuites\ImplicitDefaultTestSuite\TestKnownRunTime;
 
-use Amp\Delayed;
-use Amp\Success;
-use Cspray\Labrador\AsyncUnit\Attribute\Test;
-use Cspray\Labrador\AsyncUnit\TestCase;
+use Amp\Future;
+use Labrador\AsyncUnit\Framework\Attribute\Test;
+use Labrador\AsyncUnit\Framework\TestCase;
 
 class MyTestCase extends TestCase {
 
     #[Test]
     public function testTiming() {
-        yield new Delayed(500);
-        yield $this->asyncAssert()->floatEquals(3.14, new Success(3.14));
+        $this->asyncAssert()->floatEquals(3.14, Future::complete(3.14));
     }
 
 }

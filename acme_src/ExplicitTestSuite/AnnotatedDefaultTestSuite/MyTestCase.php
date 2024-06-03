@@ -2,8 +2,8 @@
 
 namespace Acme\DemoSuites\ExplicitTestSuite\AnnotatedDefaultTestSuite;
 
-use Cspray\Labrador\AsyncUnit\Attribute\Test;
-use Cspray\Labrador\AsyncUnit\TestCase;
+use Labrador\AsyncUnit\Framework\Attribute\Test;
+use Labrador\AsyncUnit\Framework\TestCase;
 
 class MyTestCase extends TestCase {
 
@@ -15,8 +15,8 @@ class MyTestCase extends TestCase {
 
     #[Test]
     public function ensureSomething() {
-        $this->testSuiteName = $this->testSuite()->getName();
-        $this->assert()->stringEquals(MyTestSuite::class, $this->testSuiteName);
+        $this->testSuiteName = $this->testSuite->getName();
+        $this->assert->stringEquals(MyTestSuite::class, $this->testSuiteName);
     }
 
 

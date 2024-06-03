@@ -3,25 +3,26 @@
 namespace Cspray\Labrador\AsyncUnitCli;
 
 use Amp\ByteStream\OutputStream;
-use Amp\File\Driver as FileDriver;
+use Amp\ByteStream\WritableStream;
+use Amp\File\Filesystem;
 use Cspray\Labrador\AsyncUnit\AsyncUnitApplication;
 use Cspray\Labrador\AsyncUnit\AsyncUnitFrameworkRunner;
-use Cspray\Labrador\AsyncUnit\ConfigurationFactory;
-use Cspray\Labrador\AsyncUnit\MockBridgeFactory;
+use Cspray\Labrador\AsyncUnit\Configuration\ConfigurationFactory;
 use Cspray\Labrador\AsyncUnitCli\Command\GenerateConfigurationCommand;
 use Cspray\Labrador\AsyncUnitCli\Command\RunTestsCommand;
 use Cspray\Labrador\Environment;
+use Labrador\AsyncEvent\EventEmitter;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Application as ConsoleApplication;
 
 final class AsyncUnitConsoleApplication extends ConsoleApplication {
 
     public function __construct(
-        private Environment $environment,
         private LoggerInterface $logger,
-        private FileDriver $fileDriver,
+        private EventEmitter $emitter,
+        private Filesystem $fileDriver,
         private ConfigurationFactory $configurationFactory,
-        private OutputStream $testResultOutput,
+        private WritableStream $testResultOutput,
         private string $configPath
     ) {
         parent::__construct('AsyncUnit', AsyncUnitApplication::VERSION);
@@ -30,8 +31,8 @@ final class AsyncUnitConsoleApplication extends ConsoleApplication {
 
     private function registerCommands() {
         $frameworkRunner = new AsyncUnitFrameworkRunner(
-            $this->environment,
             $this->logger,
+            $this->emitter,
             $this->configurationFactory,
             $this->testResultOutput
         );

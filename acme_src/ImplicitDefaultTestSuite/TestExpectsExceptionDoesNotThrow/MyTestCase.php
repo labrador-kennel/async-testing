@@ -2,9 +2,9 @@
 
 namespace Acme\DemoSuites\ImplicitDefaultTestSuite\TestExpectsExceptionDoesNotThrow;
 
-use Cspray\Labrador\AsyncUnit\Attribute\Test;
-use Cspray\Labrador\AsyncUnit\Exception\InvalidArgumentException;
-use Cspray\Labrador\AsyncUnit\TestCase;
+use Labrador\AsyncUnit\Framework\Attribute\Test;
+use Labrador\AsyncUnit\Framework\Exception\InvalidArgumentException;
+use Labrador\AsyncUnit\Framework\TestCase;
 
 class MyTestCase extends TestCase {
 
@@ -12,7 +12,7 @@ class MyTestCase extends TestCase {
     public function checkDoesNotThrow() {
         $this->expect()->exception(InvalidArgumentException::class);
 
-        $this->assert()->isEmpty([]);
+        $this->assert->isEmpty([]);
     }
 
 }

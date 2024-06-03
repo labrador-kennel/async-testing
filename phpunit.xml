@@ -1,44 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.5/phpunit.xsd"
-         bootstrap="vendor/autoload.php"
-         cacheResultFile=".phpunit.cache/test-results"
-         executionOrder="depends,defects"
-         forceCoversAnnotation="false"
-         beStrictAboutCoversAnnotation="false"
-         beStrictAboutOutputDuringTests="true"
-         beStrictAboutTodoAnnotatedTests="true"
-         failOnRisky="true"
-         failOnWarning="true"
-         verbose="true"
-         colors="true">
-    <testsuites>
-        <testsuite name="all">
-            <directory suffix="Test.php">framework_test</directory>
-            <directory suffix="Test.php">cli_test</directory>
-            <directory suffix=".phpt">cli_test/Integration</directory>
-        </testsuite>
-        <testsuite name="framework">
-            <directory suffix="Test.php">framework_test</directory>
-        </testsuite>
-        <testsuite name="cli">
-            <directory suffix="Test.php">cli_test</directory>
-            <directory suffix=".phpt">cli_test/Integration</directory>
-        </testsuite>
-    </testsuites>
-
-    <coverage cacheDirectory=".phpunit.cache/code-coverage"
-              processUncoveredFiles="true">
-        <include>
-            <directory suffix=".php">framework_src</directory>
-            <directory suffix=".php">cli_src</directory>
-        </include>
-        <report>
-            <text outputFile="php://stdout" showOnlySummary="true" />
-            <!--
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/10.5/phpunit.xsd" bootstrap="vendor/autoload.php" executionOrder="depends,defects" beStrictAboutOutputDuringTests="true" failOnRisky="true" failOnWarning="true" colors="true" cacheDirectory=".phpunit.cache" requireCoverageMetadata="false" beStrictAboutCoverageMetadata="false">
+  <testsuites>
+    <testsuite name="all">
+      <directory>tests/Unit</directory>
+    </testsuite>
+  </testsuites>
+  <coverage>
+    <report>
+      <text outputFile="php://stdout" showOnlySummary="true"/>
+      <!--
             <html outputDirectory="build/coverage/html" />
             <php outputFile="build/coverage/coverage.php" />
             -->
-        </report>
-    </coverage>
+    </report>
+  </coverage>
+  <source>
+    <include>
+      <directory>src</directory>
+    </include>
+  </source>
 </phpunit>
